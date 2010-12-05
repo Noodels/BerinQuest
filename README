@@ -1,3 +1,21 @@
+"BerinQuest", as fondly named by a potential contributor, is a mu*
+like game written in python. The game has no purpose, that is, there
+is no goal or reason for it to be completed, the reason the it has
+been made is for an educational purpose, an application of theory
+among first year computer science undergraduates. This is a factor
+that has driven the design: The goal of the project is not an
+efficient or successful mu*, but to be a project to put theory into
+practice where success or failure has no consequence. Efficiency,
+scaleability, performance or popularity are low priority. The aims
+of the project may change later upon completion or branching.
+
+The program will draw upon the classics muds, mushes and other
+variants for the gameplay, that is, a traditional "You are in a
+room, there are exits north and east." design. The connection will
+be a plaintext stream, potentially using ascii colour coding, and
+adapt based on telnet negotiation.
+
+LICENSE
 This file is part of BerinQuest.
 
 BerinQuest is free software: you can redistribute it and/or modify
