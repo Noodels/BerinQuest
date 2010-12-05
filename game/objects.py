@@ -5,7 +5,11 @@
 class BerinObject:
     # Mostly define attributes that everything needs to have
     def __init__(self, world, loc, **attribs):
-        self.ident = world.getNewID()
+        if 'id' in attribs.keys():
+            self.ident = attribs['id']
+            del attribs['id'] # Don't store that
+        else:
+            self.ident = world.getNewID()
         self.world = world
         self.loc = loc
         self.attributes = attribs
