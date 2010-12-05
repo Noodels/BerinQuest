@@ -2,7 +2,7 @@
 # Copyright 2010 Berin Smaldon
 
 # The Universal Object class
-class Object:
+class BerinObject:
     # Mostly define attributes that everything needs to have
     def __init__(self, world, loc, **attribs):
         self.ident = world.getNewID()
@@ -12,6 +12,9 @@ class Object:
         self.contents = [ ]
 
         world.register(self)
+    
+    def getID(self):
+        return self.ident
 
     def display(self, text):
         pass
@@ -21,18 +24,10 @@ class Object:
     def pushItem(self, newItem):
 
 # The Room class, only slightly different to the  Object class
-# It should support loc arguments of None
-class Room(Object):
+class Room(BerinObject):
     def __init__(self, world, loc, **attribs):
         self.exits = { }
-        if loc == None:
-            Object.__init__(self, world, self, **attribs)
-            # In here, insert functions to reverse
-            # the effects of specifying self as an argument
-            # to the loc attribute. Support for loc=None could
-            # be added to the universal Object though.
-        else:
-            Object.__init__(self, world, loc, **attribs)
+        Object.__init__(self, world, loc, **attribs)
 
     def renderExits(self):
         return ", ".join(self.exits.keys())
@@ -40,7 +35,7 @@ class Room(Object):
 # Objects that represent the players, mostly they just need to be tired to
 # an appropriate connection class, but None should be supported for
 # link-dead clients.
-class Puppet(Object):
+class Puppet(BerinObject):
     def __init__(self, world, loc, **attribs):
         self.client = None
         Object.__init__(self, world, loc, **attribs)
