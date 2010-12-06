@@ -1,5 +1,6 @@
 # Distributed under the terms of the GNU GPLv3
 # Copyright 2010 Berin Smaldon
+import re # Use this for getItem
 
 # The Universal Object class
 class BerinObject:
@@ -26,6 +27,29 @@ class BerinObject:
     def moveTo(self, newLoc):
 
     def pushItem(self, newItem):
+
+    def removeItem(self, toRemove):
+
+    def setAttr(self, attr, value):
+
+    def getAttr(self, attr):
+
+    def delAttr(self, attr):
+
+    def getLocation(self):
+
+    def renderExits(self):
+
+    def hasExit(self, exit):
+
+    def addExit(self, exit):
+        pass
+
+    def getContents(self):
+        return self.contents
+    
+    def getItem(self, identifier, n=None):
+        # Default n = 1, ensure n > 0
 
 # The Room class, only slightly different to the  Object class
 class Room(BerinObject):
