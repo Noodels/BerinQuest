@@ -50,5 +50,18 @@ class BerinObjectTester(TestCase):
         
         assertTrue(self.box.getLocation != self.wrath)
 
+    def test_moveOut(self):
+        self.a.moveTo(None)
+        self.b.moveTo(None)
+
+        assertEquals(self.a.loc, None)
+        assertEquals(self.b.loc, None)
+
+    def test_idAssignment(self):
+        self.c = BerinObject(self.world, None, id=131)
+        assertEquals(self.c.ident, 131)
+
+        assertRaises(TypeError, BerinObject, self.world, None, id="bacon")
+
 if __name__ == '__main__':
     main()
