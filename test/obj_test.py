@@ -49,3 +49,6 @@ class BerinObjectTester(TestCase):
         assertTrue(self.wrath.hasItem(self.box))
         
         assertTrue(self.box.getLocation != self.wrath)
+
+if __name__ == '__main__':
+    main()
