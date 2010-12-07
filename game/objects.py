@@ -30,11 +30,11 @@ class BerinObject:
 
     def removeItem(self, toRemove):
 
-    def setAttr(self, attr, value):
+    def setAttribute(self, attr, value):
 
-    def getAttr(self, attr):
+    def getAttribute(self, attr):
 
-    def delAttr(self, attr):
+    def delAttribute(self, attr):
 
     def getLocation(self):
 
