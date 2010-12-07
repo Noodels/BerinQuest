@@ -58,3 +58,5 @@ class World:
     def getFactory(self):
 
     def getPort(self):
+
+    def destroy(self, item):
