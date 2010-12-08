@@ -51,6 +51,9 @@ class BerinObject:
     def getItem(self, identifier, n=None):
         # Default n = 1, ensure n > 0
 
+    # Display text to all other objects in location
+    def emit(self, text):
+
 # The Room class, only slightly different to the  Object class
 class Room(BerinObject):
     def __init__(self, world, loc, **attribs):
