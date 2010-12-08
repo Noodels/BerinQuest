@@ -67,6 +67,8 @@ class UserConnection(StatefulTelnetProtocol):
             # Add a user to the world
             self.puppet = world.getByID(puppetID)
 
+            # TODO: Add handling and detection for when a user logs in twice
+
             if self.puppet:
                 self.sendLine("Welcome back, "+self._login[0])
             else:
@@ -75,6 +77,7 @@ class UserConnection(StatefulTelnetProtocol):
 
             assert (self.puppet != None), \
                     "Unable to find puppet for "+self._login[0]
+            self.puppet.registerConnection(self)
             self.parser = Parser(self.puppet)
             return 'Command'
 
