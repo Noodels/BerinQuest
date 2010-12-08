@@ -1,5 +1,6 @@
 # Distributed under the terms of the GNU GPLv3
 # Copyright 2010 Berin Smaldon
+from metafile import Metafile
 
 # World class, defines each world
 class World:
@@ -16,6 +17,7 @@ class World:
         self.tickCanceller = None
 
         # TODO: Load the DB
+        self.meta = Metafile(metafilePath)
     
     def getByID(self, identity):
 
