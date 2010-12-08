@@ -1,6 +1,7 @@
 # Distributed under the terms of the GNU GPLv3
 # Copyright 2010 Berin Smaldon
 from metafile import Metafile
+from network import ArgFactory
 
 # World class, defines each world
 class World:
@@ -11,10 +12,10 @@ class World:
         self.latestID = 0
 
         self.connections = [ ]
-        self.factory = # TODO: Implement this
+        self.factory = ArgFactory(self)
 
         self.reactorRef = None
-        self.tickCanceller = None
+        self.callCanceller = [ ]
 
         # TODO: Load the DB
         self.meta = Metafile(metafilePath)
@@ -35,14 +36,20 @@ class World:
 
     def animate(self, reactor):
         self.reactorRef = reactor
-        # TODO: Tick function, sets tickCanceller
+        # TODO: Tick function, appends to callCanceller
 
     # Use me
     def dummyTick(self):
         pass
+    
+    def callLater(self, time, fn, *args):
+        if self.reactorRef:
+            self.callCanceller.append(
+                    self.reactorRef.callLater(time, fn, *args) )
 
     def freeze(self):
-        self.tickCanceller.cancel()
+        for i in self.callCanceller:
+            i.cancel()
         # TODO: Error handling
         # TODO: Work out how to drop connections and stop listening
 
@@ -62,3 +69,5 @@ class World:
     def getPort(self):
 
     def destroy(self, item):
+
+    def checkUserCredentials(self, username, passhash):
