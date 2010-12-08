@@ -3,9 +3,13 @@
 # Copyright 2010 Berin Smaldon
 from game.world import World
 from twisted.internet import reactor
+from sys import argv
 
 if __name__ == '__main__':
-    bq = World('lib/bq.meta')
+    if len(sys.argv) > 1:
+        bq = World(sys.argv[1])
+    else:
+        bq = World('data/bq.meta')
 
     reactor.listenTCP(bq.getPort( ), bq.getFactory( ))
     bq.animate(reactor)
