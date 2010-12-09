@@ -58,12 +58,15 @@ class World:
         # Also restore an items contents to that item
         # Database query searching for specified location given by identity?
     
-    def store(self, item):
+    def store(self, item, upTree=None):
+        upTree = upTree or [ ]
+        upTree.append(self)
         # Contents
         c = [ ]
         for i in item.getContents():
             c.append(i.getID())
-            self.store(i)
+            if i not in upTree:
+                self.store(i, upTree)
         item.contents = c
 
         # Location
