@@ -2,46 +2,82 @@
 # Copyright 2010 Berin Smaldon
 from metafile import Metafile
 from network import ArgFactory
+from objects import BerinObject, Room, Puppet
 import pickle
+
+class DestroyerRoom:
+    def __init__(self, world):
+        self.world = world
+    def pushItem(self, item):
+        for i in item.getContents():
+            i.moveTo(self)
+        self.world.strikeFromDatabase(item.getID())
+        self.world.deregisterItem(item)
 
 # World class, defines each world
 class World:
     def __init__(self, metafilePath):
+        self.defaultAttributes = { }
         self.objects = [ ]
         self.rooms = [ ]
         self.puppets = [ ]
-        self.latestID = 0
+        self.latestID = None
+        self.destroyer = DestroyerRoom(self)
 
         self.connections = [ ]
         self.factory = ArgFactory(self)
+        self.port = None
 
         self.reactorRef = None
         self.callCanceller = [ ]
 
+        # Populate default attributes
+
         # TODO: Load the DB
         self.meta = Metafile(metafilePath)
+
+        self.port = self.meta.get("port") or 4242
+        self.latestID = self.meta.get("latestID") or 0
+        self.tickTime = self.meta.get("ticktime") or 10
     
     def getByID(self, identity):
+        for o in self.objects:
+            if o.getID() == identity:
+                return o
+        return None
+
+    def getNewID(self):
+        self.latestID += 1
+        return self.latestID
 
     def register(self, obj):
         objects.append(obj)
-        if type(obj) == # TODO: Complete me
+        if type(obj) == Room:
+            self.rooms.append(obj)
+        if type(obj) == Puppet:
+            self.puppets.append(obj)
 
     def deregister(self, obj):
+        self.objects.remove(obj)
+        self.rooms.remove(obj)
+        self.puppets.remove(obj)
 
     def registerConnection(self, conn):
+        self.connections.append(conn)
 
     def deregisterConnection(self, conn):
+        self.connections.remove(conn)
 
     def getDefaultAttr(self, attr):
+        return self.defaultAttributes.get(attr)
 
     def animate(self, reactor):
         self.reactorRef = reactor
-        # TODO: Tick function, appends to callCanceller
+        self.callLater(self.tickTime, self.dummyTick)
 
     # Use me
     def dummyTick(self):
-        pass
+        self.callLater(self.tickTime, self.dummyTick)
     
     def callLater(self, time, fn, *args):
         if self.reactorRef:
@@ -86,12 +122,22 @@ class World:
         # Store data into DB
         # TODO: Store item in DB
 
+    def storeIfNCli(self, puppet):
+        if puppet.client == None:
+            self.store(puppet)
+
     def storeAll(self):
+        while len(self.objects) > 0:
+            self.store(self.objects[0])
 
     def getFactory(self):
+        return self.factory
 
     def getPort(self):
+        return self.port
 
     def destroy(self, item):
+        if type(item) != Puppet:
+            item.moveTo(self.destroyer)
 
     def checkUserCredentials(self, username, passhash):

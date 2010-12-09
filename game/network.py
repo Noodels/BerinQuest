@@ -47,7 +47,7 @@ class UserConnection(StatefulTelnetProtocol):
             self.puppet.emit(
                     self.puppet.getAttribute('oshort') + \
                             " went link dead")
-            self.world.callLater(120, self.world.store, self.puppet)
+            self.world.callLater(120, self.world.storeIfNCli, self.puppet)
             self.world.deregisterConnection(self)
 
     def sendLine(self, line):
