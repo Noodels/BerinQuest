@@ -2,6 +2,7 @@
 # Copyright 2010 Berin Smaldon
 from metafile import Metafile
 from network import ArgFactory
+import pickle
 
 # World class, defines each world
 class World:
@@ -58,9 +59,37 @@ class World:
         # Database query searching for specified location given by identity?
     
     def store(self, item):
+        # Contents
+        c = [ ]
         for i in item.getContents():
+            c.append(i.getID())
             self.store(i)
-        # TODO: Work out how to store items
+        item.contents = c
+
+        # Location
+        item.loc.removeItem(self)
+        item.loc = item.loc.getID()
+
+        # Exits
+        e = getattr(item, "exits", None)
+        if e:
+            for k in e.keys():
+                if type(item[k]) != int:
+                    item[k].setExit(item, item.getID())
+                    item[k] = item[k].getID()
+        
+        # Clients
+        assert getattr(item, "client", None) == None, "Stored active puppet"
+        
+        # World
+        del item.world
+
+        # Pickle
+        itemID = item.getID()
+        itemdata = pickle.dumps(item)
+
+        # Store data into DB
+        # TODO: Store item in DB
 
     def storeAll(self):
 
