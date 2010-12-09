@@ -57,34 +57,26 @@ class World:
     def retrieve(self, identity):
         # Also restore an items contents to that item
         # Database query searching for specified location given by identity?
+        # TODO: Get itemdata from DB
+        assert type(itemdata) == str
+        item = pickle.loads(itemdata)
+        assert item != None
+
+        # World
+        item.world = self
+        self.register(item)
+        errVal = item.returnFromStore()
+        while errVal != None:
+            # Handle problems
+
+        return item
     
-    def store(self, item, upTree=None):
-        upTree = upTree or [ ]
-        upTree.append(self)
-        # Contents
-        c = [ ]
-        for i in item.getContents():
-            c.append(i.getID())
-            if i not in upTree:
-                self.store(i, upTree)
-        item.contents = c
-
-        # Location
-        item.loc.removeItem(self)
-        item.loc = item.loc.getID()
-
-        # Exits
-        e = getattr(item, "exits", None)
-        if e:
-            for k in e.keys():
-                if type(item[k]) != int:
-                    item[k].setExit(item, item.getID())
-                    item[k] = item[k].getID()
-        
-        # Clients
-        assert getattr(item, "client", None) == None, "Stored active puppet"
+    def store(self, item):
+        # Item handles most of its own affairs
+        item.makeStoreSafe()
         
         # World
+        self.deregister(item)
         del item.world
 
         # Pickle
