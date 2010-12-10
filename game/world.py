@@ -39,6 +39,8 @@ class World:
         self.port = self.meta.get("port") or 4242
         self.latestID = self.meta.get("latestID") or 0
         self.tickTime = self.meta.get("ticktime") or 10
+        self.startingRoom = self.getByID(self.meta.get("spawn"))
+        assert self.startingRoom
     
     def getByID(self, identity):
         for o in self.objects:
@@ -93,40 +95,67 @@ class World:
     def retrieve(self, identity):
         # Also restore an items contents to that item
         # Database query searching for specified location given by identity?
-        # TODO: Get itemdata from DB
-        assert type(itemdata) == str
-        item = pickle.loads(itemdata)
-        assert item != None
+        # Get itemID, itemType, itemLID, itemAttribs
 
-        # World
-        item.world = self
-        self.register(item)
-        errVal = item.returnFromStore()
-        while errVal != None:
-            # Handle problems
+        itemAttribs['id'] = itemID
+        item = itemTypes[itemType](self, self.getByID(itemLID), **itemAttribs)
+        if item.getLocation == None && itemLID > 0:
+            # Item should have a location but doesn't, should only happen
+            # when players pick up other players, which shouldn't really
+            # happen. Move the item to a safe room.
+            item.moveTo(self.startingRoom)
 
-        return item
+    # Put the exits in rooms right
+    def retrRooms(self):
+        for r in self.rooms:
+            for exit, dest in r.exits.items():
+                d = self.getByID(dest)
+                assert d
+                r.exits[exit] = d
     
     def store(self, item):
-        # Item handles most of its own affairs
-        item.makeStoreSafe()
-        
-        # World
-        self.deregister(item)
-        del item.world
-
-        # Pickle
         itemID = item.getID()
-        itemdata = pickle.dumps(item)
+        itemLID = 0
 
-        # Store data into DB
-        # TODO: Store item in DB
+        if type(item) == Room:
+            # Cannot store unless exits are made safe
+            if Room in [type(d) for d in item.exits.itervalues()]:
+                # In this case, the room is probably being stored recursively
+                # and should remain persistent to maintain the room network
+                if item.getLocation() != None:
+                    item._REAL_LOC = item.getLocation().getID()
+                    item.moveTo(None)
+                return
+            else:
+                # Store exits in the Exits table
+                if getAttr(item, '_REAL_LOC', False):
+                    itemLID = item._REAL_LOC
+
+                for exit, dest in item.exits.items():
+                    # Store in Exits table: itemID, exit, dest
+
+        itemType = itemTypes.index(type(item))
+        
+        if itemLID < 1 and item.getLocation() != None:
+            itemLID = item.getLocation().getID()
+            item.getLocation.removeItem(item)
+
+        for i in item.getContents():
+            self.store(i)
+
+        attribStr = pickle.dumps(item.attributes)
+        
+        # TODO: Store item in DB in format: itemID, itemType, itemLID, attribStr
 
     def storeIfNCli(self, puppet):
         if puppet.client == None:
             self.store(puppet)
 
     def storeAll(self):
+        for r in self.rooms:
+            for exit, dest in r.exits:
+                r.exits[exit] = dest.getID()
+
         while len(self.objects) > 0:
             self.store(self.objects[0])
 
