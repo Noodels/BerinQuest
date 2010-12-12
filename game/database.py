@@ -1,3 +1,6 @@
+# Distributed under the terms of the GNU GPLv3
+# Copyright 2010 Matt Windsor
+
 import sqlite3, yaml
 
 class DatabaseBackend (object):
@@ -112,7 +115,7 @@ class DatabaseBackend (object):
         the YAML file at filename."""
     
         stream = file(filename, 'r')
-        data = yaml.load(stream)
+        data = yaml.load(stream)y
     
         if 'objects' in data.keys():
             self.populate_objects(data['objects'])
