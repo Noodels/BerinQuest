@@ -1,0 +1,46 @@
+---
+world:  Berin Quest
+
+objects:
+         - id: 1
+           typeid: 2
+           locationid: 2
+           attributes:
+                       - oshort: Colin Runciman
+                       - odesc: Awesome lecturer
+           inventory:
+                       - id: 3
+                         quantity: 9000
+         - id: 2
+           typeid: 1
+           locationid: 0
+           attributes:
+                       - ishort: Muniverse
+                       - idesc: A place that won't run easily through your mind.
+         - id: 3
+           typeid: 0
+           locationid: 1
+           attributes:
+                       - oshort: Green card
+                       - odesc: Makes things seem more important.
+         - id: 4
+           typeid: 2
+           locationid: 2
+           attributes:
+                       - oshort: Turbo Pascal
+                       - odesc: Compiles very quickly!
+         - id: 5
+           typeid: 0
+           locationid: 2
+           attributes:
+                       - oshort: Breakfast
+                       - odesc: An elderly couple left this here. It is fashioned from eggs, bacon and tomato.
+
+players:
+         - username: Berin
+           passhash: EkofjeJOWsja
+           puppetid: 1
+
+         - username: Pascal
+           passhash: EfomfORJgnmd
+           puppetid: 4

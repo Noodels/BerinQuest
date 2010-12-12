@@ -25,22 +25,31 @@ class BerinObject:
         pass
 
     def moveTo(self, newLoc):
+        pass
 
     def pushItem(self, newItem):
+        pass
 
     def removeItem(self, toRemove):
+        pass
 
     def setAttribute(self, attr, value):
+        pass
 
     def getAttribute(self, attr):
+        pass
 
     def delAttribute(self, attr):
+        pass
 
     def getLocation(self):
+        pass
 
     def renderExits(self):
+        pass
 
     def hasExit(self, exit):
+        pass
 
     def addExit(self, exit, destination):
         pass
@@ -52,10 +61,12 @@ class BerinObject:
         return self.contents
     
     def getItem(self, identifier, n=None):
+        pass
         # Default n = 1, ensure n > 0
 
     # Display text to all other objects in location
     def emit(self, text):
+        pass
 
 # The Room class, only slightly different to the  Object class
 class Room(BerinObject):
@@ -88,8 +99,10 @@ class Puppet(BerinObject):
             self.client.sendLine(text)
 
     def registerClient(self, newClient):
+        pass
 
     def deregisterClient(self):
+        pass
 
 # Item type list, please keep up to date:
 itemTypes = [

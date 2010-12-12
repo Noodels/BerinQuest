@@ -28,15 +28,22 @@ class Parser:
             self.puppet.sendLine("You are acting like an idiot")
 
     def cmd_go(self, command):
+        pass
 
     def cmd_look(self, command):
+        pass
 
     def cmd_quit(self, command):
+        pass
 
     def cmd_inventory(self, command):
+        pass
     
     def cmd_say(self, command):
+        pass
 
     def cmd_get(self, command):
+        pass
 
     def cmd_drop(self, command):
+        pass

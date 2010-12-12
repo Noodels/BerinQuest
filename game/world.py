@@ -99,7 +99,7 @@ class World:
 
         itemAttribs['id'] = itemID
         item = itemTypes[itemType](self, self.getByID(itemLID), **itemAttribs)
-        if item.getLocation == None && itemLID > 0:
+        if item.getLocation == None and itemLID > 0:
             # Item should have a location but doesn't, should only happen
             # when players pick up other players, which shouldn't really
             # happen. Move the item to a safe room.
@@ -132,6 +132,7 @@ class World:
                     itemLID = item._REAL_LOC
 
                 for exit, dest in item.exits.items():
+                    pass
                     # Store in Exits table: itemID, exit, dest
 
         itemType = itemTypes.index(type(item))
@@ -170,3 +171,4 @@ class World:
             item.moveTo(self.destroyer)
 
     def checkUserCredentials(self, username, passhash):
+        pass
