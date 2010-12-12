@@ -75,17 +75,19 @@ class DatabaseBackend (object):
     }
 
     def __init__ (self, filename):
+        """Creates the DatabaseBackend, opening a database connection."""
         object.__init__(self)
         self.conn = sqlite3.connect(filename)
         
         
     def __del__ (self):
-        print "woo"
+        """Destroys the DatabaseBackend. closing the database connection."""
+        
         self.conn.commit()
         self.conn.close()
 
         
-    def drop_tables(self):
+    def dropTables(self):
         """Drop every table defined in the BerinQuest database."""
 
         c = self.conn.cursor()
@@ -97,9 +99,10 @@ class DatabaseBackend (object):
         c.close()
 
 
-    def create_tables(self):
+    def createTables(self):
         """Create every table defined in the BerinQuest database, if 
-        they do not exist already."""
+        they do not exist already.
+        """
     
         c = self.conn.cursor()
     
@@ -110,38 +113,41 @@ class DatabaseBackend (object):
         c.close() 
 
     
-    def populate_tables_from_yaml(self, filename):
+    def populateTablesFromYaml(self, filename):
         """Fill the BerinQuest database with information extracted from 
-        the YAML file at filename."""
+        the YAML file at filename.
+        """
     
         stream = file(filename, 'r')
-        data = yaml.load(stream)y
+        data = yaml.load(stream)
     
         if 'objects' in data.keys():
-            self.populate_objects(data['objects'])
+            self.populateObjects(data['objects'])
         else:
             print "WARNING: No objects in YAML file"
     
         if 'players' in data.keys():
-            self.populate_players(data['players'])
+            self.populatePlayers(data['players'])
         else:
             print "WARNING: No players in YAML file"
     
 
-    def populate_objects(self, object_tree):
+    def populateObjects(self, object_tree):
         """Given a YAML dictionary tree object_tree of objects, 
         populate the database with the object information 
-        contained within the tree."""
+        contained within the tree.
+        """
     
         for berinobject in object_tree:
-            self.populate_object (berinobject)
+            self.populateObject (berinobject)
         
         self.conn.commit()
 
 
-    def populate_object(self, berinobject):
+    def populateObject(self, berinobject):
         """Insert a BerinObject, given its YAML dictionary tree (berinobject), into the 
-        database."""
+        database.
+        """
 
         c = self.conn.cursor()
 
@@ -166,9 +172,10 @@ class DatabaseBackend (object):
                           (berinobject['id'], attribute.keys()[0], attribute[attribute.keys()[0]]))
     
     
-    def populate_players(self, player_tree):   
+    def populatePlayers(self, player_tree):   
         """Given a YAML dictionary tree player_tree of players, 
-        populate the database with the player information contained within the tree."""    
+        populate the database with the player information contained within the tree.
+        """    
 
         c = self.conn.cursor()
     
@@ -178,16 +185,12 @@ class DatabaseBackend (object):
         
         self.conn.commit()
 
-
-def main():
-    db = DatabaseBackend('db')
-
-    db.drop_tables()
-    db.create_tables()
-    db.populate_tables_from_yaml("demo.yaml")
-    db.test_sql()
-
-    del db
-    
-if __name__ == '__main__':
-    main ()
+    def storeExit (self, objectid, direction, destinationid):
+        """Store a room exit in the database."""
+        
+        c = self.conn.cursor()
+        
+        c.execute('''INSERT INTO room_exits VALUES (?, ?, ?)''', 
+                  objectid, direction, destinationid)
+        
+        self.conn.commit()

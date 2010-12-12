@@ -9,16 +9,16 @@ import game.objects
 class DatabaseTesting(unittest.TestCase):
 
     def setUp(self):
-        self.db = DatabaseBackend ('test.sql')
-        self.db.drop_tables()
-        self.db.create_tables()
+        self.db = DatabaseBackend ('berin.db')
+        self.db.dropTables()
+        self.db.createTables()
 
     def tearDown(self):
         del self.db
 
 
     def testYamlParse(self):
-        self.db.populate_tables_from_yaml('test.yaml')
+        self.db.populateTablesFromYaml('db.yaml')
         
         c = self.db.conn.cursor()
     
