@@ -34,10 +34,22 @@ class BerinObject:
         pass
 
     def setAttribute(self, attr, value):
-        pass
+        """Set the attribute attr to value."""
+        
+        self.attributes[attr] = value
 
     def getAttribute(self, attr):
-        pass
+        """Get the attribute attr, or None if it does not exist."""
+        
+        try:
+            return self.attributes[attr]
+        except KeyError:
+            return None
+    
+    def getAttributes(self):
+        """Get the dictionary of attributes."""
+        
+        return self.attributes
 
     def delAttribute(self, attr):
         pass

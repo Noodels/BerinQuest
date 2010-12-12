@@ -7,17 +7,24 @@ from game.objects import itemTypes
 import game.objects
 
 class DatabaseTesting(unittest.TestCase):
+    """A test construct for the database backend system."""
 
     def setUp(self):
+        """Initialise the database construct."""
+        
         self.db = DatabaseBackend ('berin.db')
         self.db.dropTables()
         self.db.createTables()
 
     def tearDown(self):
+        """De-initialise the database construct."""
+        
         del self.db
 
 
     def testYamlParse(self):
+        """Test the YAML population functions of the database backend."""
+        
         self.db.populateTablesFromYaml('db.yaml')
         
         c = self.db.conn.cursor()
@@ -80,6 +87,60 @@ class DatabaseTesting(unittest.TestCase):
         c.close() 
 
 
+    def testAPIObject(self):
+        """Test use of the database backend's API to store and get objects."""
+        
+        self.db.storeItem(1, 2, 0, {"ishort" : "CSE/270", "idesc": "A computer science lab."})
+        
+        objectID, typeID, locationID, attribs = self.db.getItem(1)
+        
+        self.assertEqual(objectID, 1)
+        self.assertEqual(typeID, 2)
+        self.assertEqual(locationID, 0)
+        self.assertEqual(attribs, {"ishort" : "CSE/270", "idesc": "A computer science lab."})
+
+
+    def testAPIPlayer(self):
+        """Test use of the database backend's API to check player credentials."""
+        
+        c = self.db.conn.cursor()
+        
+        # Try storing and getting a player. Storage at time of writing is manual-only.
+        
+        c.execute('''INSERT INTO players
+                  VALUES ("Berin", "abc123", 1)''')
+        
+        self.db.conn.commit()
+        
+        username, passhash, puppetID = self.db.getUser("Berin")
+        
+        self.assertEqual(username, "Berin")
+        self.assertEqual(passhash, "abc123")
+        self.assertEqual(puppetID, 1)
+
+
+    def testAPIExits(self):
+        """Test use of the database backend's API to store and get room exits."""
+        
+        # First, store two rooms.
+        
+        self.db.storeItem(1, 2, 0, {"ishort" : "CSE/270", "idesc": "A computer science lab."})
+        self.db.storeItem(2, 2, 0, {"ishort" : "CSE 2F", "idesc": "The second-floor corridor of the Computer Science building."})
+
+        # Then make an exit pair.
+        
+        self.db.storeExit(1, "out", 2)
+        self.db.storeExit(2, "in", 1)
+        
+        # Now check the accessor
+        
+        roomdict = self.db.getExits(1)
+        corrdict = self.db.getExits(2)
+        
+        self.assertEqual(roomdict, {"out" : 2})
+        self.assertEqual(corrdict, {"in"  : 1}) 
+        
+        
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

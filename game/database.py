@@ -185,12 +185,120 @@ class DatabaseBackend (object):
         
         self.conn.commit()
 
+
+    def getItem (self, identity):
+        """Get a BerinObject out of the database with identity identity.
+        
+        This returns either ID, type, location ID and attributes 
+        (in that order) if a matching object is found, or 
+        None, None, None, None if no matching object was found.
+        """
+
+        c = self.conn.cursor()
+        
+        objectRows = [row for row in c.execute ('''SELECT objects.objectid, objects.typeid, objects.locationid
+                                                   FROM objects
+                                                   WHERE objects.objectid == ?''', (identity,))]
+        
+        if (len(objectRows) == 0):
+            return None, None, None, None
+        else:
+            # Should only be at most one object that matches
+            assert (len(objectRows) == 1)
+            
+            itemID = objectRows[0][0]
+            itemType = objectRows[0][1]
+            itemLID = objectRows[0][2]
+            itemAttribs = {}
+        
+            # Now get the attributes
+        
+            for row in c.execute ('''SELECT object_attributes.key, object_attributes.value
+                                  FROM object_attributes
+                                  WHERE object_attributes.objectid == ?''', (itemID,)):
+                itemAttribs[row[0]] = row[1]
+            
+            return itemID, itemType, itemLID, itemAttribs
+     
+     
+    def storeItem (self, itemID, itemType, itemLID, itemAttribs):
+        """Store a BerinObject's data (ID, type, location ID and attribute
+        dictionary respectively) into the database."""    
+
+        c = self.conn.cursor()
+        
+        c.execute ('''INSERT INTO objects
+                   VALUES (?, ?, ?)''', 
+                   (itemID, itemType, itemLID))
+        
+        for key in itemAttribs.keys():
+            c.execute ('''INSERT INTO object_attributes
+                       VALUES (?, ?, ?)''',
+                       (itemID, key, itemAttribs[key]))
+        
+        self.conn.commit()
+
+
+    def getUser (self, identity):
+        """Retrieve the user with identity identity (this is currently 
+        equivalent to their username).
+        
+        This returns either username, passhash and puppet ID 
+        (in that order) if a matching player is found, or 
+        None, None, None if no matching player was found.
+        """
+        
+        c = self.conn.cursor()
+        
+        playerrows = [row for row in c.execute ('''SELECT players.username, players.passhash, players.puppetid
+                                                FROM players
+                                                WHERE players.username == ?''', 
+                                                (identity,))]
+        
+        if (len(playerrows) == 0):
+            return None, None, None
+        else:
+            # Should be only one entry at most for a user!
+            assert (len(playerrows) == 1)
+            
+            return playerrows[0][0], playerrows[0][1], playerrows[0][2]
+        
+    
+    def storeUser (self, username, passhash, puppetid):
+        """Store user credentials into the database."""
+        
+        c = self.conn.cursor()
+        
+        c.execute ('''INSERT INTO players
+                   VALUES (?, ?, ?)''', 
+                   (username, passhash, puppetid))
+        
+        self.conn.commit()
+        
+        
+    def getExits (self, roomid):
+        """Get all exits connected to the room with ID roomid."""
+        
+        c = self.conn.cursor()
+        
+        exitdict = {}
+        
+        for row in c.execute ('''SELECT room_exits.direction, room_exits.destinationid
+                              FROM room_exits
+                              WHERE roomid == ?''', 
+                              (roomid,)):
+            exitdict[row[0]] = row[1]
+            
+        return exitdict
+    
+
     def storeExit (self, objectid, direction, destinationid):
         """Store a room exit in the database."""
         
         c = self.conn.cursor()
         
-        c.execute('''INSERT INTO room_exits VALUES (?, ?, ?)''', 
-                  objectid, direction, destinationid)
+        c.execute('''INSERT INTO room_exits 
+                     VALUES (?, ?, ?)''', 
+                  (objectid, direction, destinationid))
         
         self.conn.commit()

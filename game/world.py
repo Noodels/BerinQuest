@@ -2,7 +2,8 @@
 # Copyright 2010 Berin Smaldon
 from metafile import Metafile
 from network import ArgFactory
-from objects import BerinObject, Room, Puppet
+from objects import BerinObject, Room, Puppet, itemTypes
+from database import DatabaseBackend
 import pickle
 
 class DestroyerRoom:
@@ -32,15 +33,18 @@ class World:
         self.callCanceller = [ ]
 
         # Populate default attributes
-
-        # TODO: Load the DB
+        
         self.meta = Metafile(metafilePath)
 
         self.port = self.meta.get("port") or 4242
         self.latestID = self.meta.get("latestID") or 0
         self.tickTime = self.meta.get("ticktime") or 10
+        self.db = DatabaseBackend(self.meta.get("dbpath")) or "berin.db"
         self.startingRoom = self.getByID(self.meta.get("spawn"))
         assert self.startingRoom
+    
+    def __del__(self):
+        del self.db
     
     def getByID(self, identity):
         for o in self.objects:
@@ -96,6 +100,8 @@ class World:
         # Also restore an items contents to that item
         # Database query searching for specified location given by identity?
         # Get itemID, itemType, itemLID, itemAttribs
+        
+        itemID, itemType, itemLID, itemAttribs = self.db.getItem(identity)
 
         itemAttribs['id'] = itemID
         item = itemTypes[itemType](self, self.getByID(itemLID), **itemAttribs)
@@ -114,6 +120,8 @@ class World:
                 r.exits[exit] = d
     
     def store(self, item):
+        """Store an item in the database."""
+        
         itemID = item.getID()
         itemLID = 0
 
@@ -127,13 +135,12 @@ class World:
                     item.moveTo(None)
                 return
             else:
-                # Store exits in the Exits table
-                if getAttr(item, '_REAL_LOC', False):
+                # Store it exits in the Exits table
+                if getattr(item, '_REAL_LOC', False):
                     itemLID = item._REAL_LOC
 
                 for exit, dest in item.exits.items():
-                    pass
-                    # Store in Exits table: itemID, exit, dest
+                    self.db.storeExit(item.getID(), exit, dest)
 
         itemType = itemTypes.index(type(item))
         
@@ -144,9 +151,7 @@ class World:
         for i in item.getContents():
             self.store(i)
 
-        attribStr = pickle.dumps(item.attributes)
-        
-        # TODO: Store item in DB in format: itemID, itemType, itemLID, attribStr
+        self.db.storeItem (itemID, itemType, itemLID, item.attributes)
 
     def storeIfNCli(self, puppet):
         if puppet.client == None:
@@ -171,4 +176,14 @@ class World:
             item.moveTo(self.destroyer)
 
     def checkUserCredentials(self, username, passhash):
-        pass
+        """Check to see if the user details given match with the 
+        user records in the database."""
+        
+        chkUsername, chkPasshash, chkPuppetID = self.db.getUser (username)
+        
+        if (chkUsername == username
+            and chkPasshash == passhash):
+            return True
+        else:
+            return False
+        

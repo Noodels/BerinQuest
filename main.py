@@ -3,7 +3,7 @@
 # Copyright 2010 Berin Smaldon
 from game.world import World
 from twisted.internet import reactor
-from sys import argv
+import sys
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
