@@ -56,6 +56,7 @@ class World:
 
     def getNewID(self):
         self.latestID += 1
+        self.meta.set("latestID", self.latestID)
         return self.latestID
 
     def register(self, obj):
@@ -166,6 +167,9 @@ class World:
 
         while len(self.objects) > 0:
             self.store(self.objects[0])
+
+    def strikeFromDatabase(itemID):
+        # TODO: Whip Matt until this function works
 
     def getFactory(self):
         return self.factory
