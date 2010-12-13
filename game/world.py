@@ -69,7 +69,7 @@ class World:
         self.connections.remove(conn)
 
     def getDefaultAttr(self, attr):
-        return self.defaultAttributes.get(attr)
+        return self.defaultAttributes.get(attr, None)
 
     def animate(self, reactor, factoryStopper):
         self.stop = factoryStopper
@@ -153,7 +153,8 @@ class World:
         for i in item.getContents():
             self.store(i)
 
-        self.db.storeItem (itemID, itemType, itemLID, item.attributes)
+        self.db.storeItem (itemID, itemType, itemLID,
+                item.getAllAttributes() )
 
     def storeIfNCli(self, puppet):
         if puppet.client == None:

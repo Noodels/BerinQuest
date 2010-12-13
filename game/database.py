@@ -152,10 +152,10 @@ class DatabaseBackend (object):
         c = self.conn.cursor()
 
         # This is so that objects with no location are properly stored.
-        # (TODO: Is this necessary?
+        # (TODO: Is this necessary? Shouldn't be, return 0 and make it work
     
-        if berinobject['locationid'] <= 0:
-            berinobject["locationid"] = None
+        #if berinobject['locationid'] <= 0:
+        #    berinobject["locationid"] = None
             
             
         # Add an entry into the main table for the berinobject

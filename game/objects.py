@@ -25,13 +25,15 @@ class BerinObject:
         pass
 
     def moveTo(self, newLoc):
-        pass
+        self.loc.removeItem(self)
+        self.loc = newLoc
+        self.loc.pushItem(self)
 
     def pushItem(self, newItem):
-        pass
+        self.contents.append(newItem)
 
     def removeItem(self, toRemove):
-        pass
+        self.contents.remove(toRemove)
 
     def setAttribute(self, attr, value):
         """Set the attribute attr to value."""
@@ -41,27 +43,29 @@ class BerinObject:
     def getAttribute(self, attr):
         """Get the attribute attr, or None if it does not exist."""
         
-        try:
-            return self.attributes[attr]
-        except KeyError:
-            return None
+        #try:
+        #    return self.attributes[attr]
+        #except KeyError:
+        #    return None
+        return self.attributes.get(attr, None)
     
-    def getAttributes(self):
+    def getAllAttributes(self):
         """Get the dictionary of attributes."""
         
         return self.attributes
 
     def delAttribute(self, attr):
-        pass
+        if attr in self.attributes.keys():
+            del self.attribues[attr]
 
     def getLocation(self):
-        pass
+        return self.loc
 
     def renderExits(self):
-        pass
+        return "There are no exits here"
 
     def hasExit(self, exit):
-        pass
+        return False
 
     def addExit(self, exit, destination):
         pass
@@ -73,12 +77,33 @@ class BerinObject:
         return self.contents
     
     def getItem(self, identifier, n=None):
-        pass
-        # Default n = 1, ensure n > 0
+        n = n or "1"
+        try:
+            n = int(n)
+        except ValueError:
+            return None
+        if n < 1:
+            return None
+
+        p = re.compile(identifier)
+        for i in self.contents:
+            if p.match(i.getAttribute('oshort'):
+                    n -= 1
+                    if n <= 0:
+                        return i
+
+        return None
 
     # Display text to all other objects in location
     def emit(self, text):
-        pass
+        self.loc.show(text, fltr=[self])
+
+    # Show text to objects in location, configurable
+    # TODO: Add more functionality
+    def show(self, text, **kwargs):
+        for i in self.contents:
+            if i not in kwargs.get('fltr',[]):
+                i.display(text)
 
 # The Room class, only slightly different to the  Object class
 class Room(BerinObject):
@@ -112,10 +137,12 @@ class Puppet(BerinObject):
             self.client.sendLine(text)
 
     def registerClient(self, newClient):
-        pass
+        assert self.client == None, \
+                "Tried to assign client to active puppet"
+        self.client = newClient
 
     def deregisterClient(self):
-        pass
+        self.client = None
 
 # Item type list, please keep up to date:
 itemTypes = [
