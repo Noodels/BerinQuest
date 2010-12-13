@@ -5,13 +5,19 @@ class Parser:
     def __init__(self, puppet):
         self.puppet = puppet
 
+    def getPuppet(self):
+        return self.puppet
+
     def parseLine(self, line):
         # Line formatting
+        line = line.strip()
         
         # Line splitting, supports escape characters?
-        line.split()
+        command = line.split()
 
         # Avoid empty lists
+        if len(command) == 0:
+            return None
 
         # Call function
         # command[0] should be case insensitive
