@@ -30,7 +30,7 @@ class Parser:
         # Check puppet's exits
 
         # If exit, go there
-        if len(command) == 1 && self.puppet.getLocation() && \
+        if len(command) == 1 and self.puppet.getLocation() and \
                 self.puppet.getLocation().hasExit(command[0]):
             self.cmd_go("go",command[0])
         else:
@@ -38,7 +38,7 @@ class Parser:
 
     def cmd_go(self, go, where):
         src = self.puppet.getLocation()
-        if src && src.hasExit(where):
+        if src and src.hasExit(where):
             dest = src.getExit(where)
             dest.show(self.puppet.getAttribute('oshort') + ' arrives')
             
@@ -59,7 +59,7 @@ class Parser:
         _lhere = self.puppet.getLocation() != None
         if command[2] == 'own':
             command = command[2:]
-            if len(command) < 1 || len(command) > 2:
+            if len(command) < 1 or len(command) > 2:
                 self.cmd_idiot()
                 return None
             _lhere = False

@@ -112,6 +112,7 @@ class World:
         if itemTypes[itemType] == Room:
             # TODO: Query the database for this object's exits
             # TODO: Set exits to IDs of rooms they link to
+            pass
 
     # Put the exits in rooms right
     def retrRooms(self):
@@ -170,6 +171,7 @@ class World:
 
     def strikeFromDatabase(itemID):
         # TODO: Whip Matt until this function works
+        pass
 
     def getFactory(self):
         return self.factory
