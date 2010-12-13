@@ -15,6 +15,8 @@ class RoomTesting(unittest.TestCase):
         self.o.addExit("out", self.r)
 
     def test_checkExit(self):
+        self.r.addExit("vortex", self.r)
+        self.o.addExit("out", self.r)
         self.assertTrue(self.r.hasExit("vortex"))
         self.assertFalse(self.r.hasExit("north"))
         self.assertFalse(self.o.hasExit("out"))
