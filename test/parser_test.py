@@ -12,6 +12,12 @@ class DummyPuppet:
         if self.connection:
             self.connection.sendLine(line)
 
+    def getLocation(self):
+        return None
+    
+    def getContents(self):
+        return []
+
 class DummyConnection:
     def __init__(self):
         self.parser = Parser(DummyPuppet( ))
@@ -22,15 +28,15 @@ class DummyConnection:
         self.data = self.data + line
 
     def recvLine(self, line):
-        self.parser.parseLine(line)
+        return self.parser.parseLine(line)
 
 class ParserTester(unittest.TestCase):
     def setUp(self):
         self.dconn = DummyConnection( )
 
     def test_flow(self):
-        self.dconn.sendLine("idiot")
-        unittest.assertEquals(self.dconn.data, "You are acting like an idiot")
+        self.assertEquals(self.dconn.recvLine("idiot"), None)
+        self.assertEquals(self.dconn.data, "You are acting like an idiot")
 
 if __name__ == '__main__':
     unittest.main()
