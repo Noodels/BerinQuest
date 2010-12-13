@@ -1,5 +1,5 @@
 # Distributed under the terms of the GNU GPLv3
-# Copyright 2010 Berin Smaldon
+# Copyright 2010 Berin Smaldon, Matt Windsor
 from metafile import Metafile
 from network import ArgFactory
 from objects import BerinObject, Room, Puppet, itemTypes
@@ -39,12 +39,14 @@ class World:
         self.port = self.meta.get("port") or 4242
         self.latestID = self.meta.get("latestID") or 0
         self.tickTime = self.meta.get("ticktime") or 10
-        self.db = DatabaseBackend(self.meta.get("dbpath")) or "berin.db"
+        dbpath = self.meta.get("dbpath") or "berin.db"
+        self.db = DatabaseBackend(dbpath)
         self.startingRoom = self.getByID(self.meta.get("spawn"))
         assert self.startingRoom
     
     def __del__(self):
         del self.db
+        # TODO: Make metafile persistent
     
     def getByID(self, identity):
         for o in self.objects:
@@ -183,7 +185,7 @@ class World:
         
         if (chkUsername == username
             and chkPasshash == passhash):
-            return True
+            return chkPuppetID
         else:
-            return False
+            return None
         
