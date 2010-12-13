@@ -131,6 +131,9 @@ class Room(BerinObject):
     def delExit(self, exit):
         del self.exits[exit]
 
+    def getExit(self, exit):
+        return self.exits.get(exit, None)
+
 # Objects that represent the players, mostly they just need to be tired to
 # an appropriate connection class, but None should be supported for
 # link-dead clients.
