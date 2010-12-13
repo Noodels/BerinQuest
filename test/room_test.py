@@ -15,11 +15,14 @@ class RoomTesting(unittest.TestCase):
         self.o.addExit("out", self.r)
 
     def test_checkExit(self):
-        unittest.assertTrue(self.r.hasExit("vortex"))
-        unittest.assertFalse(self.r.hasExit("north"))
-        unittest.assertFalse(self.o.hasExit("out"))
+        self.assertTrue(self.r.hasExit("vortex"))
+        self.assertFalse(self.r.hasExit("north"))
+        self.assertFalse(self.o.hasExit("out"))
 
-        unittest.assertEquals(self.r.getExit("vortex"), self.r)
+        self.assertEquals(self.r.getExit("vortex"), self.r)
+
+    def test_location(self):
+        self.assertEquals(self.o.getLocation(), self.r)
 
 if __name__ == '__main__':
     unittest.main()
