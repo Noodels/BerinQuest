@@ -87,7 +87,7 @@ class BerinObject:
 
         p = re.compile(identifier)
         for i in self.contents:
-            if p.match(i.getAttribute('oshort'):
+            if p.match(i.getAttribute('oshort')):
                     n -= 1
                     if n <= 0:
                         return i
