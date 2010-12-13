@@ -117,7 +117,7 @@ class BerinObject:
 class Room(BerinObject):
     def __init__(self, world, loc, **attribs):
         self.exits = { }
-        Object.__init__(self, world, loc, **attribs)
+        BerinObject.__init__(self, world, loc, **attribs)
 
     def renderExits(self):
         return ", ".join(self.exits.keys())
@@ -138,7 +138,7 @@ class Puppet(BerinObject):
     def __init__(self, world, loc, **attribs):
         self.client = None
         self._quitFlag = 0
-        Object.__init__(self, world, loc, **attribs)
+        BerinObject.__init__(self, world, loc, **attribs)
 
     def display(self, text):
         if self.client != None:
