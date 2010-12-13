@@ -95,10 +95,7 @@ class World:
             c.transport.loseConnection()
 
     def retrieve(self, identity):
-        # Also restore an items contents to that item
-        # Database query searching for specified location given by identity?
-        # Get itemID, itemType, itemLID, itemAttribs
-        
+        # Also restore an items contents in the database
         itemID, itemType, itemLID, itemAttribs = self.db.getItem(identity)
 
         itemAttribs['id'] = itemID
@@ -108,6 +105,13 @@ class World:
             # when players pick up other players, which shouldn't really
             # happen. Move the item to a safe room.
             item.moveTo(self.startingRoom)
+
+        # TODO: Query the database for objects whos LID is this objects ID
+        # TODO: retrieve those objects
+
+        if itemTypes[itemType] == Room:
+            # TODO: Query the database for this object's exits
+            # TODO: Set exits to IDs of rooms they link to
 
     # Put the exits in rooms right
     def retrRooms(self):
@@ -190,4 +194,3 @@ class World:
             return chkPuppetID
         else:
             return None
-        
