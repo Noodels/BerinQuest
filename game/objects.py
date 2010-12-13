@@ -7,7 +7,7 @@ class BerinObject:
     # Mostly define attributes that everything needs to have
     def __init__(self, world, loc, **attribs):
         if 'id' in attribs.keys():
-            self.ident = attribs['id']
+            self.ident = int(attribs['id'])
             del attribs['id'] # Don't store that
         else:
             self.ident = world.getNewID()
@@ -25,9 +25,16 @@ class BerinObject:
         pass
 
     def moveTo(self, newLoc):
-        self.loc.removeItem(self)
+        if self.loc:
+            self.loc.removeItem(self)
         self.loc = newLoc
-        self.loc.pushItem(self)
+        if self.loc:
+            self.loc.pushItem(self)
+
+    def hasItem(self, item):
+        if type(item) != int:
+            item = item.getID()
+        return (item in [i.getID() for i in self.contents])
 
     def pushItem(self, newItem):
         self.contents.append(newItem)

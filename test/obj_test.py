@@ -52,8 +52,8 @@ class BerinObjectTester(TestCase):
         self.wrath.moveTo(None)
         self.box.moveTo(None)
 
-        self.assertEquals(self.a.loc, None)
-        self.assertEquals(self.b.loc, None)
+        self.assertEquals(self.wrath.loc, None)
+        self.assertEquals(self.box.loc, None)
 
     def test_idAssignment(self):
         c = BerinObject(self.world, None, id=131)
