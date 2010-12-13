@@ -96,7 +96,8 @@ class BerinObject:
 
     # Display text to all other objects in location
     def emit(self, text):
-        self.loc.show(text, fltr=[self])
+        if self.loc:
+            self.loc.show(text, fltr=[self])
 
     # Show text to objects in location, configurable
     # TODO: Add more functionality
