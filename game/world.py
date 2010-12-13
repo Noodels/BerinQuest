@@ -6,15 +6,6 @@ from objects import BerinObject, Room, Puppet, itemTypes
 from database import DatabaseBackend
 import pickle
 
-class DestroyerRoom:
-    def __init__(self, world):
-        self.world = world
-    def pushItem(self, item):
-        for i in item.getContents():
-            i.moveTo(self)
-        self.world.strikeFromDatabase(item.getID())
-        self.world.deregisterItem(item)
-
 # World class, defines each world
 class World:
     def __init__(self, metafilePath):
@@ -80,7 +71,8 @@ class World:
     def getDefaultAttr(self, attr):
         return self.defaultAttributes.get(attr)
 
-    def animate(self, reactor):
+    def animate(self, reactor, factoryStopper):
+        self.stop = factoryStopper
         self.reactorRef = reactor
         self.callLater(self.tickTime, self.dummyTick)
 
@@ -96,8 +88,11 @@ class World:
     def freeze(self):
         for i in self.callCanceller:
             i.cancel()
-        # TODO: Error handling
-        # TODO: Work out how to drop connections and stop listening
+        self.stop.stopListening()
+
+        for c in self.connections:
+            c._quitFlag = 1
+            c.transport.loseConnection()
 
     def retrieve(self, identity):
         # Also restore an items contents to that item
@@ -121,7 +116,7 @@ class World:
                 d = self.getByID(dest)
                 assert d
                 r.exits[exit] = d
-    
+
     def store(self, item):
         """Store an item in the database."""
         
@@ -178,8 +173,11 @@ class World:
         return self.port
 
     def destroy(self, item):
-        if type(item) != Puppet:
-            item.moveTo(self.destroyer)
+        item.moveTo(None)
+        for c in item.contents:
+            self.destroy(c)
+        self.deregister(item)
+        self.strikeFromDatabase(item.getID())
 
     def checkUserCredentials(self, username, passhash):
         """Check to see if the user details given match with the 

@@ -11,7 +11,7 @@ if __name__ == '__main__':
     else:
         bq = World('data/bq.meta')
 
-    reactor.listenTCP(bq.getPort( ), bq.getFactory( ))
-    bq.animate(reactor)
+    s = reactor.listenTCP(bq.getPort( ), bq.getFactory( ))
+    bq.animate(reactor, s)
 
     reactor.main( )

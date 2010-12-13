@@ -104,6 +104,7 @@ class Room(BerinObject):
 class Puppet(BerinObject):
     def __init__(self, world, loc, **attribs):
         self.client = None
+        self._quitFlag = 0
         Object.__init__(self, world, loc, **attribs)
 
     def display(self, text):
