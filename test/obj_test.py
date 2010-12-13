@@ -19,49 +19,48 @@ class DummyWorld:
 class BerinObjectTester(TestCase):
     def setUp(self):
         self.world = DummyWorld( )
+        self.wrath = BerinObject(self.world, None, oshort="Lis0r's wrath",
+                odesc="Lis0r's wrath has been condensed into physical form and placed in a jar. The jar is hot.")
+        self.box = BerinObject(self.world, None, oshort="a braced steel box",
+                odesc="A reinforced box made of 3 inch steel.")
 
     def test_creation(self):
-        a = BerinObject(self.world, None, oshort="Lis0r's wrath",
-                odesc="Lis0r's wrath has been condensed into physical form and placed in a jar. The jar is hot.")
+        a = BerinObject(self.world, None, oshort="an orange",
+                odesc="Luckily, the orange is just an object and nothing special.")
         # Initialisation assertions
         self.assertEquals(a.getLocation( ), None)
         self.assertEquals(a.getID( ), self.world.latestID)
-        self.wrath = a
+        self.assertEquals(a.getLocation( ), a.loc)
 
     def test_moveTo(self):
-        b = BerinObject(self.world, None, oshort="a braced steel box",
-                odesc="A reinforced box made of 3 inch steel.")
-        
         # Moving a into b causes a to be inside b, and b to contain a
-        self.wrath.moveTo(b)
-        self.assertEquals(self.wrath.getLocation( ), b)
-        self.assertTrue(self.wrath in b.contents)
+        self.wrath.moveTo(self.box)
+        self.assertEquals(self.wrath.getLocation(), self.box)
+        self.assertTrue(self.wrath in self.box.contents)
 
         # BerinObject.hasItem( item ) accepts item as an item or item ID
-        self.assertTrue(self.wrath in b.contents)
-        self.assertTrue(b.hasItem(self.wrath))
-        self.assertTrue(b.hasItem(self.wrath.getID( )))
-
-        self.box = b
+        self.assertTrue(self.box.hasItem(self.wrath))
+        self.assertTrue(self.box.hasItem(self.wrath.getID()))
 
     def test_moveToSpecifics(self):
         self.wrath.pushItem(self.box)
         self.assertTrue(self.wrath.hasItem(self.box))
         
-        self.assertTrue(self.box.getLocation != self.wrath)
+        self.assertTrue(self.box.getLocation() != self.wrath)
 
     def test_moveOut(self):
-        self.a.moveTo(None)
-        self.b.moveTo(None)
+        self.wrath.moveTo(None)
+        self.box.moveTo(None)
 
         self.assertEquals(self.a.loc, None)
         self.assertEquals(self.b.loc, None)
 
     def test_idAssignment(self):
-        self.c = BerinObject(self.world, None, id=131)
-        self.assertEquals(self.c.ident, 131)
+        c = BerinObject(self.world, None, id=131)
+        self.assertEquals(c.ident, 131)
+        self.assertEquals(c.getID(), c.ident)
 
-        self.assertRaises(TypeError, BerinObject, self.world, None, id="bacon")
+        self.assertRaises(ValueError, BerinObject, self.world, None, id="bacon")
 
 if __name__ == '__main__':
     main()
