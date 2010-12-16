@@ -42,8 +42,7 @@ class Metafile(yaml.YAMLObject):
     def writeFile(self):
         # Clear the file
         self.f = open(self.metafilePath, 'w')
-        for i in self.data:
-            self.f.write(i + ': ' + self.data[i]+ '\n')
+        yaml.dump(self.data, self.f)
         self.f.close()
         
     """ Delete the file at metafilePath"""
