@@ -196,9 +196,9 @@ class DatabaseBackend (object):
 
         c = self.conn.cursor()
         
-        objectRows = [row for row in c.execute ('''SELECT objects.objectid, objects.typeid, objects.locationid
-                                                   FROM objects
-                                                   WHERE objects.objectid == ?''', (identity,))]
+        objectRows = c.execute('''SELECT objects.objectid, objects.typeid, objects.locationid
+                               FROM objects
+                               WHERE objects.objectid == ?''', (identity,)).fetchall()
         
         if (len(objectRows) == 0):
             return None, None, None, None
@@ -213,13 +213,23 @@ class DatabaseBackend (object):
         
             # Now get the attributes
         
-            for row in c.execute ('''SELECT object_attributes.key, object_attributes.value
-                                  FROM object_attributes
-                                  WHERE object_attributes.objectid == ?''', (itemID,)):
+            for row in c.execute('''SELECT object_attributes.key, object_attributes.value
+                                 FROM object_attributes
+                                 WHERE object_attributes.objectid = ?''', (itemID,)):
                 itemAttribs[row[0]] = row[1]
             
             return itemID, itemType, itemLID, itemAttribs
      
+     
+    def getChildren (self, locationID):
+        """Retrieve a list of all object IDs whose location ID is locationID."""
+        
+        c = self.conn.cursor()
+        
+        return [row[0] for row in c.execute('''SELECT objects.objectID
+                                            FROM objects
+                                            WHERE objects.locationID = ?''', 
+                                            (locationID,))]
      
     def storeItem (self, itemID, itemType, itemLID, itemAttribs):
         """Store a BerinObject's data (ID, type, location ID and attribute
@@ -227,14 +237,47 @@ class DatabaseBackend (object):
 
         c = self.conn.cursor()
         
-        c.execute ('''INSERT INTO objects
-                   VALUES (?, ?, ?)''', 
-                   (itemID, itemType, itemLID))
+        c.execute('''INSERT INTO objects
+                  VALUES (?, ?, ?)''', 
+                  (itemID, itemType, itemLID))
         
         for key in itemAttribs.keys():
-            c.execute ('''INSERT INTO object_attributes
-                       VALUES (?, ?, ?)''',
-                       (itemID, key, itemAttribs[key]))
+            c.execute('''INSERT INTO object_attributes
+                      VALUES (?, ?, ?)''',
+                      (itemID, key, itemAttribs[key]))
+        
+        self.conn.commit()
+        
+        
+    def delItem (self, identity, new_location):
+        """Strike a BerinObject from of the database with identity identity,
+        if it exists in the database.
+        
+        All items in the database that are located inside this BerinObject 
+        will be moved to the location new_location."""       
+        
+        c = self.conn.cursor()
+
+        c.execute('''UPDATE objects
+                  SET locationid = ?
+                  WHERE locationid = ?''',
+                  (new_location, identity))
+
+        c.execute('''DELETE
+                  FROM objects
+                  WHERE objects.objectid = ?''',
+                  (identity,))
+                  
+        c.execute('''DELETE
+                  FROM object_attributes
+                  WHERE object_attributes.objectid = ?''', 
+                  (identity,))
+        
+        c.execute('''DELETE
+                  FROM room_exits
+                  WHERE room_exits.roomid = ?
+                  OR room_exits.destinationid = ?''',
+                  (identity, identity))
         
         self.conn.commit()
 
@@ -250,10 +293,10 @@ class DatabaseBackend (object):
         
         c = self.conn.cursor()
         
-        playerrows = [row for row in c.execute ('''SELECT players.username, players.passhash, players.puppetid
-                                                FROM players
-                                                WHERE players.username == ?''', 
-                                                (identity,))]
+        playerrows = c.execute('''SELECT players.username, players.passhash, players.puppetid
+                               FROM players
+                               WHERE players.username = ?''', 
+                               (identity,)).fetchall()
         
         if (len(playerrows) == 0):
             return None, None, None
@@ -269,24 +312,24 @@ class DatabaseBackend (object):
         
         c = self.conn.cursor()
         
-        c.execute ('''INSERT INTO players
-                   VALUES (?, ?, ?)''', 
-                   (username, passhash, puppetid))
+        c.execute('''INSERT INTO players
+                  VALUES (?, ?, ?)''', 
+                  (username, passhash, puppetid))
         
         self.conn.commit()
         
         
     def getExits (self, roomid):
-        """Get all exits connected to the room with ID roomid."""
+        """Get a dictionary of all exits connected to the room with ID roomid."""
         
         c = self.conn.cursor()
         
         exitdict = {}
         
-        for row in c.execute ('''SELECT room_exits.direction, room_exits.destinationid
-                              FROM room_exits
-                              WHERE roomid == ?''', 
-                              (roomid,)):
+        for row in c.execute('''SELECT room_exits.direction, room_exits.destinationid
+                             FROM room_exits
+                             WHERE roomid = ?''', 
+                             (roomid,)):
             exitdict[row[0]] = row[1]
             
         return exitdict

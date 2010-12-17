@@ -16,6 +16,7 @@ class DatabaseTesting(unittest.TestCase):
         self.db.dropTables()
         self.db.createTables()
 
+
     def tearDown(self):
         """De-initialise the database construct."""
         
@@ -31,41 +32,41 @@ class DatabaseTesting(unittest.TestCase):
     
         # Test to see if the muniverse object is present
     
-        muniverse_object = [row for row in c.execute ('''SELECT object_attributes.objectid
-                                                         FROM object_attributes
-                                                         WHERE object_attributes.key == 'ishort'
-                                                         AND object_attributes.value == 'Muniverse' ''' )]
-        self.assertEqual(muniverse_object[0], (2,))
+        muniverse_object = c.execute('''SELECT object_attributes.objectid
+                                     FROM object_attributes
+                                     WHERE object_attributes.key == 'ishort'
+                                     AND object_attributes.value == 'Muniverse' ''').fetchone()
+        self.assertEqual(muniverse_object, (2,))
         
         # Now test to see if it's a room
         
-        muniverse_type = [row for row in c.execute ('''SELECT objects.typeid
-                                                       FROM objects
-                                                       WHERE objects.objectid == 2''')]
-        self.assertEqual(muniverse_type[0], (itemTypes.index(game.objects.Room),))
+        muniverse_type = c.execute('''SELECT objects.typeid
+                                   FROM objects
+                                   WHERE objects.objectid == 2''').fetchone()
+        self.assertEqual(muniverse_type, (itemTypes.index(game.objects.Room),))
     
     
         # Next, get all the objects directly in the muniverse. There should be three
         # (Colin Runciman, Turbo Pascal and a breakfast). 
     
-        objects_in_muniverse = [row for row in c.execute('''SELECT object_attributes.value
-                                                         FROM object_attributes
-                                                         INNER JOIN objects
-                                                         ON objects.objectid == object_attributes.objectid
-                                                         WHERE object_attributes.key == 'oshort' 
-                                                         AND objects.locationid == 2''')]
+        objects_in_muniverse = c.execute('''SELECT object_attributes.value
+                                         FROM object_attributes
+                                         INNER JOIN objects
+                                         ON objects.objectid == object_attributes.objectid
+                                         WHERE object_attributes.key == 'oshort' 
+                                         AND objects.locationid == 2''').fetchall()
         self.assertEqual(objects_in_muniverse, [("Colin Runciman",), ("Turbo Pascal",), ("Breakfast",)])
         
         
         # Finally, get all the puppets linked to players.
         
-        playermaps = [row for row in c.execute('''SELECT object_attributes.value, players.username, objects.typeid
+        playermaps = c.execute('''SELECT object_attributes.value, players.username, objects.typeid
                                FROM object_attributes
                                INNER JOIN players
                                ON players.puppetid == object_attributes.objectid   
                                INNER JOIN objects
                                ON objects.objectid == object_attributes.objectid
-                               WHERE object_attributes.key == 'oshort' ''')]
+                               WHERE object_attributes.key == 'oshort' ''').fetchall()
     
     
         # The matchings should be Colin Runciman -> Berin, Turbo Pascal -> Pascal
@@ -98,7 +99,66 @@ class DatabaseTesting(unittest.TestCase):
         self.assertEqual(typeID, 2)
         self.assertEqual(locationID, 0)
         self.assertEqual(attribs, {"ishort" : "CSE/270", "idesc": "A computer science lab."})
+    
+    
+    def testObjectStrike(self):
+        """Test use of the database backend's API to delete objects."""
+        
+        self.db.storeItem(1, 2, 0, {"ishort" : "CSE/270", "idesc": "A computer science lab."})
+        self.db.storeItem(2, 2, 0, {"ishort" : "CSE 2F", "idesc": "The second-floor corridor of the Computer Science building."})
+        self.db.storeItem(3, 0, 1, {"oshort" : "Colin Runciman", "odesc": "Do you need a description of Colin Runciman?!"})
 
+        # Then make an exit pair.
+        
+        self.db.storeExit(1, "out", 2)
+        self.db.storeExit(2, "in", 1)
+        
+        # Now delete CSE/270! Oh no! Colin should be moved to CSE 2F!
+        
+        self.db.delItem(1, 2)
+        
+        # Test the three objects - 1 should be nonexistent, 2 shouldn't have changed and 3 should now be inside 2.
+        
+        objectID, typeID, locationID, attribs = self.db.getItem(1)
+        
+        self.assertEqual(objectID, None)
+        self.assertEqual(typeID, None)
+        self.assertEqual(locationID, None)
+        self.assertEqual(attribs, None)
+        
+        objectID, typeID, locationID, attribs = self.db.getItem(2)
+        
+        self.assertEqual(objectID, 2)
+        self.assertEqual(typeID, 2)
+        self.assertEqual(locationID, 0)
+        self.assertEqual(attribs, {"ishort" : "CSE 2F", "idesc" : "The second-floor corridor of the Computer Science building."})    
+        
+        objectID, typeID, locationID, attribs = self.db.getItem(3)
+        
+        self.assertEqual(objectID, 3)
+        self.assertEqual(typeID, 0)
+        self.assertEqual(locationID, 2)
+        self.assertEqual(attribs, {"oshort" : "Colin Runciman", "odesc" : "Do you need a description of Colin Runciman?!"})       
+
+        # Test room exits - there should be none.
+        
+        for i in xrange(1, 4):
+            self.assertEqual(self.db.getExits(i), {})
+        
+        
+    def testAPIChildren(self):
+        """Test use of the database backend's API to find children of an object."""
+        
+        self.db.storeItem(1, 2, 0, {"ishort" : "CSE/270", "idesc" : "A computer science lab."})
+        self.db.storeItem(2, 2, 0, {"ishort" : "CSE 2F", "idesc" : "The second-floor corridor of the Computer Science building."})
+        self.db.storeItem(3, 0, 1, {"oshort" : "Colin Runciman", "odesc" : "Do you need a description of Colin Runciman?!"})
+        self.db.storeItem(4, 0, 1, {"oshort" : "Pascal", "odesc" : "He's here! He's finally here!"})
+        self.db.storeItem(5, 1, 2, {"oshort" : "SuperBerin", "odesc" : "You are acting like an idiot."})
+        
+        self.assertEqual(self.db.getChildren(1), [3, 4])
+        self.assertEqual(self.db.getChildren(2), [5])
+        self.assertEqual(self.db.getChildren(3), [])
+        
 
     def testAPIPlayer(self):
         """Test use of the database backend's API to check player credentials."""

@@ -106,10 +106,12 @@ class World:
             # happen. Move the item to a safe room.
             item.moveTo(self.startingRoom)
 
-        # TODO: Query the database for objects whos LID is this objects ID
-        # TODO: retrieve those objects
+        # Get all objects whose LID is this object's ID
+        for childID in self.db.getChildren(itemID):
+            self.retrieve(childID)
 
         if itemTypes[itemType] == Room:
+            item.setExits(self.db.getExits(itemID))
             # TODO: Query the database for this object's exits
             # TODO: Set exits to IDs of rooms they link to
             pass
@@ -170,8 +172,13 @@ class World:
             self.store(self.objects[0])
 
     def strikeFromDatabase(itemID):
-        # TODO: Whip Matt until this function works
-        pass
+        if self.getByID(itemID) is not None:
+            location = self.getByID(itemID).getLocation()
+            
+            if location is None:
+                location = 0
+                
+            db.delItem(itemID, self.getByID(itemID).getLocation());
 
     def getFactory(self):
         return self.factory
