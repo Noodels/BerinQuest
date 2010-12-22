@@ -33,8 +33,11 @@ class MetafileTestCase(unittest.TestCase):
         self.testMetafile.remove('name')
         # Check it worked
         assert 'name' not in self.testMetafile.data
+    
+    def test_5_getNonExistant(self):
+        self.assertEqual(self.testMetafile.get('derp'), None)
         
-    def test_5_delete(self):
+    def test_6_delete(self):
         # Delete the file to clean up
         self.testMetafile.deleteFile()
         assert not path.isfile('test.yaml')
