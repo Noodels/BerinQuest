@@ -124,6 +124,16 @@ class Room(BerinObject):
     
     def addExit(self, exit, destination):
         self.exits[exit] = destination
+        
+    def setExits(self, exitdict):
+        """Replace the dictionary of room exits with the given dictionary.
+        
+        This should only be done when the current exit dictionary is empty.
+        """
+        
+        assert len(self.exits) == 0
+        
+        self.exits = exitdict
 
     def hasExit(self, exit):
         return (exit in self.exits.keys())
