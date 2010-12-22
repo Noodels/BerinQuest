@@ -104,7 +104,7 @@ class World:
             # when players pick up other players, which shouldn't really
             # happen. Move the item to a safe room. Might be game start.
             item.moveTo(self.startingRoom)
-			item._REAL_LOC = itemLID
+            item._REAL_LOC = itemLID
 
         # Get all objects whose LID is this object's ID
         for childID in self.db.getChildren(itemID):
@@ -115,13 +115,13 @@ class World:
             # TODO: Query the database for this object's exits
             # TODO: Set exits to IDs of rooms they link to
             pass
-	
-	def finalizeRetrieval(self):
-		for o in self.objects:
-			i = getattr(item, "_REAL_LOC", False)
-			if i:
-				d = self.getByID(i)
-				o.moveTo(d)
+    
+    def finalizeRetrieval(self):
+        for o in self.objects:
+            i = getattr(item, "_REAL_LOC", False)
+            if i:
+                d = self.getByID(i)
+                o.moveTo(d)
 
     # Put the exits in rooms right
     def retrRooms(self):
