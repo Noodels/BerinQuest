@@ -31,7 +31,10 @@ class Metafile(yaml.YAMLObject):
     
     """Return the content of tag tag"""
     def get(self, tag):
-        return self.data[tag]
+        try:
+            return self.data[tag]
+        except KeyError:
+            return None
     
     """Remove an element with the tag tag from data, then write to metafilePath to reflect this change"""
     def remove(self, tag):
