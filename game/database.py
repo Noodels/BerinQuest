@@ -74,13 +74,13 @@ class DatabaseBackend (object):
      "destinationid" : 2})
     }
 
-    def __init__ (self, filename):
+    def __init__(self, filename):
         """Creates the DatabaseBackend, opening a database connection."""
         object.__init__(self)
         self.conn = sqlite3.connect(filename)
         
         
-    def __del__ (self):
+    def __del__(self):
         """Destroys the DatabaseBackend. closing the database connection."""
         
         self.conn.commit()
@@ -170,6 +170,14 @@ class DatabaseBackend (object):
             for attribute in berinobject['attributes']:
                 c.execute('''INSERT INTO object_attributes VALUES (?, ?, ?)''',
                           (berinobject['id'], attribute.keys()[0], attribute[attribute.keys()[0]]))
+                
+                
+        # Populate berinobject exits tree
+
+        if 'exits' in berinobject.keys():
+            for exit in berinobject['exits']:
+                c.execute('''INSERT INTO room_exits VALUES (?, ?, ?)''',
+                          (berinobject['id'], exit.keys()[0], exit[exit.keys()[0]]))    
     
     
     def populatePlayers(self, player_tree):   
@@ -186,7 +194,7 @@ class DatabaseBackend (object):
         self.conn.commit()
 
 
-    def getItem (self, identity):
+    def getItem(self, identity):
         """Get a BerinObject out of the database with identity identity.
         
         This returns either ID, type, location ID and attributes 
@@ -221,7 +229,7 @@ class DatabaseBackend (object):
             return itemID, itemType, itemLID, itemAttribs
      
      
-    def getChildren (self, locationID):
+    def getChildren(self, locationID):
         """Retrieve a list of all object IDs whose location ID is locationID."""
         
         c = self.conn.cursor()
@@ -231,7 +239,7 @@ class DatabaseBackend (object):
                                             WHERE objects.locationID = ?''', 
                                             (locationID,))]
      
-    def storeItem (self, itemID, itemType, itemLID, itemAttribs):
+    def storeItem(self, itemID, itemType, itemLID, itemAttribs):
         """Store a BerinObject's data (ID, type, location ID and attribute
         dictionary respectively) into the database."""    
 
@@ -249,7 +257,7 @@ class DatabaseBackend (object):
         self.conn.commit()
         
         
-    def delItem (self, identity, new_location):
+    def delItem(self, identity, new_location):
         """Strike a BerinObject from of the database with identity identity,
         if it exists in the database.
         
@@ -282,7 +290,7 @@ class DatabaseBackend (object):
         self.conn.commit()
 
 
-    def getUser (self, identity):
+    def getUser(self, identity):
         """Retrieve the user with identity identity (this is currently 
         equivalent to their username).
         
@@ -307,7 +315,7 @@ class DatabaseBackend (object):
             return playerrows[0][0], playerrows[0][1], playerrows[0][2]
         
     
-    def storeUser (self, username, passhash, puppetid):
+    def storeUser(self, username, passhash, puppetid):
         """Store user credentials into the database."""
         
         c = self.conn.cursor()
@@ -319,7 +327,7 @@ class DatabaseBackend (object):
         self.conn.commit()
         
         
-    def getExits (self, roomid):
+    def getExits(self, roomid):
         """Get a dictionary of all exits connected to the room with ID roomid."""
         
         c = self.conn.cursor()
@@ -335,7 +343,7 @@ class DatabaseBackend (object):
         return exitdict
     
 
-    def storeExit (self, objectid, direction, destinationid):
+    def storeExit(self, objectid, direction, destinationid):
         """Store a room exit in the database."""
         
         c = self.conn.cursor()

@@ -50,7 +50,7 @@ class World:
         return self.latestID
 
     def register(self, obj):
-        objects.append(obj)
+        self.objects.append(obj)
         if type(obj) == Room:
             self.rooms.append(obj)
         if type(obj) == Puppet:
@@ -104,7 +104,7 @@ class World:
             # when players pick up other players, which shouldn't really
             # happen. Move the item to a safe room. Might be game start.
             item.moveTo(self.startingRoom)
-			item._REAL_LOC = itemLID
+            item._REAL_LOC = itemLID
 
         # Get all objects whose LID is this object's ID
         for childID in self.db.getChildren(itemID):
@@ -112,8 +112,6 @@ class World:
 
         if itemTypes[itemType] == Room:
             item.setExits(self.db.getExits(itemID))
-            # TODO: Query the database for this object's exits
-            # TODO: Set exits to IDs of rooms they link to
             pass
 	
 	def finalizeRetrieval(self):
@@ -178,7 +176,7 @@ class World:
         while len(self.objects) > 0:
             self.store(self.objects[0])
 
-    def strikeFromDatabase(itemID):
+    def strikeFromDatabase(self, itemID):
         if self.getByID(itemID) is not None:
             location = self.getByID(itemID).getLocation()
             

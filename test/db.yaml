@@ -8,15 +8,14 @@ objects:
            attributes:
                        - oshort: Colin Runciman
                        - odesc: Awesome lecturer
-           inventory:
-                       - id: 3
-                         quantity: 9000
          - id: 2
            typeid: 1
            locationid: 0
            attributes:
                        - ishort: Muniverse
-                       - idesc: A place that won't run easily through your mind.
+                       - idesc: A true description of this place would not run easily through your mind.
+           exits:
+                       - inside: 6
          - id: 3
            typeid: 0
            locationid: 1
@@ -35,6 +34,15 @@ objects:
            attributes:
                        - oshort: Breakfast
                        - odesc: An elderly couple left this here. It is fashioned from eggs, bacon and tomato.
+         - id: 6
+           typeid: 1
+           locationid: 0
+           attributes:
+                       - ishort: Power Pizzas
+                       - idesc: Better than Efe's, by far.
+           exits:
+                       - outside: 2
+
 
 players:
          - username: Berin

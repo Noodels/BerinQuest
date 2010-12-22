@@ -82,6 +82,14 @@ class DatabaseTesting(unittest.TestCase):
         for row in playermaps:
             self.assertEqual(row[2], itemTypes.index(game.objects.Puppet))
     
+        # Finally, test exits.
+        
+        exits = c.execute('''SELECT room_exits.roomid, room_exits.direction, room_exits.destinationid
+                          FROM room_exits''').fetchall()
+                          
+        self.assertEqual(exits[0], (2, "inside", 6))
+        self.assertEqual(exits[1], (6, "outside", 2))
+     
      
         # All done!
     
