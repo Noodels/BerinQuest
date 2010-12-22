@@ -67,9 +67,13 @@ class UserConnection(StatefulTelnetProtocol):
             # Add a user to the world
             self.puppet = world.getByID(puppetID)
 
-            # TODO: Add handling and detection for when a user logs in twice
-
             if self.puppet:
+                if self.puppet.client != None:
+                    # TODO: Make puppet.display show ip of replacing user
+                    # This should also be logged when/if the game ever supports that
+                    self.puppet.display("User has logged in in your place, booting you!")
+                    self.puppet.forceQuit(1)
+                    self.puppet.deregisterClient()
                 self.sendLine("Welcome back, "+self._login[0])
             else:
                 self.puppet = self.world.retrieve(puppetID)
@@ -77,6 +81,7 @@ class UserConnection(StatefulTelnetProtocol):
 
             assert (self.puppet != None), \
                     "Unable to find puppet for "+self._login[0]
+            assert (self.puppet.client == None), "Two users to one puppet error"
             self.puppet.registerConnection(self)
             self.parser = Parser(self.puppet)
             return 'Command'
