@@ -1,0 +1,5 @@
+banner:Fixme
+port:8081
+ticktime:10
+dbpath:data/bq.sql
+spawn:1

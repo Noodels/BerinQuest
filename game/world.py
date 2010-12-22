@@ -14,7 +14,6 @@ class World:
         self.rooms = [ ]
         self.puppets = [ ]
         self.latestID = None
-        self.destroyer = DestroyerRoom(self)
 
         self.connections = [ ]
         self.factory = ArgFactory(self)
