@@ -1,5 +1,14 @@
-banner:Fixme
-port:8081
-ticktime:10
-dbpath:data/bq.sql
-spawn:1
+banner: "XXXXXX           \
+    \                    XXXXX                                 \nX     X  XXXXXX \
+    \ XXXXX   X  X    X  X     X  X    X  XXXXXX   XXXX   XXXXX \nX     X  X     \
+    \  X    X  X  XX   X  X     X  X    X  X       X         X   \nXXXXXX   XXXXX\
+    \   X    X  X  X X  X  X     X  X    X  XXXXX    XXXX     X   \nX     X  X   \
+    \    XXXXX   X  X  X X  X   X X  X    X  X            X    X   \nX     X  X  \
+    \     X   X   X  X   XX  X    X   X    X  X       X    X    X   \nXXXXXX   XXXXXX\
+    \  X    X  X  X    X   XXXX X   XXXX   XXXXXX   XXXX     X"
+                                                                            
+
+port: 8081
+ticktime: 10
+dbpath: data/bq.sql
+spawn: 1
