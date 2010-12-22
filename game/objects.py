@@ -165,6 +165,10 @@ class Puppet(BerinObject):
     def deregisterClient(self):
         self.client = None
 
+    def forceQuit(qFlag=None):
+        self._quitFlag = qFlag or self._quitFlag
+        self.client.transport.loseConnection()
+
 # Item type list, please keep up to date:
 itemTypes = [
         BerinObject,
