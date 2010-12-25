@@ -192,8 +192,8 @@ class DatabaseBackend (object):
                       (player['username'], player['passhash'], player['puppetid']))
         
         self.conn.commit()
-
-
+        
+        
     def getItem(self, identity):
         """Get a BerinObject out of the database with identity identity.
         
@@ -227,7 +227,31 @@ class DatabaseBackend (object):
                 itemAttribs[row[0]] = row[1]
             
             return itemID, itemType, itemLID, itemAttribs
-     
+
+
+
+    def getItems(self):
+        """Generate an iterator that yields (itemID, itemType, itemLID, itemAttributes) tuples 
+        for each item in the database."""
+
+        c = self.conn.cursor()
+        
+        for row in c.execute('''SELECT objects.objectid, objects.typeid, objects.locationid
+                               FROM objects''').fetchall():
+                    
+            # Get the attributes using row[0] as object ID
+            
+            itemAttribs = {}
+        
+            for arow in c.execute('''SELECT object_attributes.key, object_attributes.value
+                                 FROM object_attributes
+                                 WHERE object_attributes.objectid = ?''', (row[0],)):
+                itemAttribs[arow[0]] = arow[1]
+            
+            # Add the attributes to the end of the row.
+            
+            yield (row[0], row[1], row[2], itemAttribs)
+            
      
     def getChildren(self, locationID):
         """Retrieve a list of all object IDs whose location ID is locationID."""
@@ -245,9 +269,14 @@ class DatabaseBackend (object):
 
         c = self.conn.cursor()
         
+        # Store non-attribute data
+        
         c.execute('''INSERT INTO objects
                   VALUES (?, ?, ?)''', 
                   (itemID, itemType, itemLID))
+        
+        
+        # Store attributes
         
         for key in itemAttribs.keys():
             c.execute('''INSERT INTO object_attributes
@@ -266,10 +295,15 @@ class DatabaseBackend (object):
         
         c = self.conn.cursor()
 
+        # Move objects out of item to be stricken into new location
+
         c.execute('''UPDATE objects
                   SET locationid = ?
                   WHERE locationid = ?''',
                   (new_location, identity))
+
+
+        # Delete all data we have on the stricken item
 
         c.execute('''DELETE
                   FROM objects
@@ -353,3 +387,4 @@ class DatabaseBackend (object):
                   (objectid, direction, destinationid))
         
         self.conn.commit()
+        
