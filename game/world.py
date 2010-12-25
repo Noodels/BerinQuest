@@ -23,17 +23,37 @@ class World:
         self.callCanceller = [ ]
 
         # Populate default attributes
+        # TODO: Get default attributes
         
         self.meta = Metafile(metafilePath)
 
-        self.port = self.meta.get("port") or 4242
-        self.latestID = self.meta.get("latestID") or 0
+        self.port = int(self.meta.get("port")) or 4242
+        #self.latestID = self.meta.get("latestID") or 0
         self.tickTime = self.meta.get("ticktime") or 10
         dbpath = self.meta.get("dbpath") or "berin.db"
-        self.db = DatabaseBackend(dbpath)
-        self.startingRoom = self.getByID(self.meta.get("spawn"))
+        # Starting room is in ID form
+        self.startingRoom = self.meta.get("spawn")
         assert self.startingRoom
-    
+
+        self.db = DatabaseBackend(dbpath)
+        self.latestID = 0
+        # TODO: Select ALL objects from self.db, return iterator
+        for i in cursor:
+            latestID = max(latestID, i)
+            self.retrieve(i)
+
+        # Set locations
+        self.finalizeRetrieval()
+        # Set exits correctly
+        self.retrRooms()
+
+        # Remove puppets
+        for p in self.puppets:
+            self.store(p)
+
+        self.startingRoom = self.getByID(self.startingRoom)
+        assert self.startingRoom != None
+
     def __del__(self):
         del self.db
         # TODO: Make metafile persistent if necessary
