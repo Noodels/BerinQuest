@@ -28,9 +28,12 @@ class World:
         self.meta = Metafile(metafilePath)
 
         self.port = int(self.meta.get("port")) or 4242
+        assert type(self.port) == int
         #self.latestID = self.meta.get("latestID") or 0
         self.tickTime = self.meta.get("ticktime") or 10
+        assert type(self.tickTime) == int
         dbpath = self.meta.get("dbpath") or "berin.db"
+        assert type(dbpath) == str
         # Starting room is in ID form
         self.startingRoom = self.meta.get("spawn")
         assert self.startingRoom
