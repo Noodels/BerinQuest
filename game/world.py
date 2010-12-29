@@ -56,7 +56,7 @@ class World:
 
     def __del__(self):
         del self.db
-        # TODO: Make metafile persistent if necessary
+        del self.meta
     
     def getByID(self, identity):
         for o in self.objects:
