@@ -8,7 +8,7 @@ class Metafile(dict):
         self.pathToYAML = pathToYAML
         self.writable = False
         fi = open(pathToYAML, "r")
-        super(Metafile, self).__init__(yaml.load(fi.read()))
+        super(Metafile, self).__init__(yaml.load(fi.read()) or {})
         fi.close()
 
     # Typically, the metafile might ought to be readonly
