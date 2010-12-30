@@ -155,7 +155,6 @@ class World:
 
         if itemTypes[itemType] == Room:
             item.setExits(self.db.getExits(itemID))
-            pass
     
     def finalizeRetrieval(self):
         for o in self.objects:
@@ -163,6 +162,7 @@ class World:
             if i:
                 d = self.getByID(i)
                 o.moveTo(d)
+                del i._REAL_LOC
             
 
     # Put the exits in rooms right
