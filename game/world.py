@@ -37,10 +37,8 @@ class World:
 
         self.db = DatabaseBackend(dbpath)
         self.latestID = 0
-        # TODO: Select ALL objects from self.db, return iterator
-        for i in cursor:
-            latestID = max(latestID, i)
-            self.retrieve(i)
+        
+        self.retrieve()
 
         # Set locations
         self.finalizeRetrieval()
@@ -113,33 +111,59 @@ class World:
             c._quitFlag = 1
             c.transport.loseConnection()
 
-    def retrieve(self, identity):
-        # Also restore an items contents in the database
-        itemID, itemType, itemLID, itemAttribs = self.db.getItem(identity)
+    def retrieve(self):
+        """Retrieve all items from the database backend.
+        
+        This also appropriately sets latestID to the highest ID 
+        present in the database.
+        """
+        
+        # getItems is an iterator retrieving tuples
+        # (itemID, itemType, itemLocationID, itemAttributes)
+        
+        for i in self.db.getItems():
+            self.latestID = max(self.latestID, i[0])
+            self.createItem (i[0], i[1], i[2], i[3])
+
+
+    def createItem(self, itemID, itemType, itemLID, itemAttribs):
+        """Create a new item in memory given the item's ID, type, location ID
+        and attributes, as retrieved for example from the database.
+        """
 
         itemAttribs['id'] = itemID
-        item = itemTypes[itemType](self, self.getByID(itemLID), **itemAttribs)
-        if item.getLocation == None and itemLID > 0:
+
+        # NOTE: The item location can't be retrieved yet as it may not have 
+        # been pulled out of the database yet.  We'll resolve it later but, 
+        # for now, give it the LID as param _REAL_LOC.
+        # TODO: clean this up?
+        
+        item = itemTypes[itemType](self, None, **itemAttribs)
+        item._REAL_LOC = itemLID
+        
+        #if item.getLocation == None and itemLID > 0:
             # Item should have a location but doesn't, should only happen
             # when players pick up other players, which shouldn't really
             # happen. Move the item to a safe room. Might be game start.
-            item.moveTo(self.startingRoom)
-            item._REAL_LOC = itemLID
+        #    item.moveTo(self.startingRoom)
+        #    item._REAL_LOC = itemLID
 
+        # v-- Not necessary (all items retrieved)
         # Get all objects whose LID is this object's ID
-        for childID in self.db.getChildren(itemID):
-            self.retrieve(childID)
+        #for childID in self.db.getChildren(itemID):
+        #    self.retrieve(childID)
 
         if itemTypes[itemType] == Room:
             item.setExits(self.db.getExits(itemID))
-            pass
     
     def finalizeRetrieval(self):
         for o in self.objects:
-            i = getattr(item, "_REAL_LOC", False)
+            i = getattr(o, "_REAL_LOC", False)
             if i:
                 d = self.getByID(i)
                 o.moveTo(d)
+                del i._REAL_LOC
+            
 
     # Put the exits in rooms right
     def retrRooms(self):

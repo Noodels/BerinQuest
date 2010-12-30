@@ -107,6 +107,42 @@ class DatabaseTesting(unittest.TestCase):
         self.assertEqual(typeID, 2)
         self.assertEqual(locationID, 0)
         self.assertEqual(attribs, {"ishort" : "CSE/270", "idesc": "A computer science lab."})
+
+
+    def testAPIObjectIteration(self):
+        """Test use of the database backend's API to store objects then retrieve them as an iteration."""
+        
+        self.db.storeItem(1, 2, 0, {"ishort" : "CSE/270", "idesc": "A computer science lab."})
+        self.db.storeItem(2, 2, 0, {"ishort" : "CSE 2F", "idesc": "The second-floor corridor of the Computer Science building."})
+        
+        items = self.db.getItems()
+        item = items.next()
+        
+        #First item
+        
+        objectID = item[0]
+        typeID = item[1]
+        locationID = item[2]
+        attribs = item[3]
+        
+        self.assertEqual(objectID, 1)
+        self.assertEqual(typeID, 2)
+        self.assertEqual(locationID, 0)
+        self.assertEqual(attribs, {"ishort" : "CSE/270", "idesc": "A computer science lab."})
+
+        # Second item
+
+        item = items.next()
+
+        objectID = item[0]
+        typeID = item[1]
+        locationID = item[2]
+        attribs = item[3]
+        
+        self.assertEqual(objectID, 2)
+        self.assertEqual(typeID, 2)
+        self.assertEqual(locationID, 0)
+        self.assertEqual(attribs, {"ishort" : "CSE 2F", "idesc": "The second-floor corridor of the Computer Science building."})
     
     
     def testObjectStrike(self):
@@ -126,6 +162,8 @@ class DatabaseTesting(unittest.TestCase):
         self.db.delItem(1, 2)
         
         # Test the three objects - 1 should be nonexistent, 2 shouldn't have changed and 3 should now be inside 2.
+        
+        
         
         objectID, typeID, locationID, attribs = self.db.getItem(1)
         
