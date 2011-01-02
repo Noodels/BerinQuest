@@ -62,7 +62,7 @@ class UserConnection(StatefulTelnetProtocol):
         return 'Password'
     
     def telnet_Password(self, line):
-        self._login[1] = md5(line.strip()).digest()
+        self._login[1] = md5(line.strip()).hexdigest()
 
         puppetID = self.world.checkUserCredentials(*self._login)
         if puppetID:
