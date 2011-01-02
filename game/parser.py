@@ -24,7 +24,7 @@ class Parser:
         try:
             r = getattr(self, "cmd_"+command[0], self.cmd_idiot)(*command)
         except TypeError:
-            self.cmd_idiot()
+            r = self.cmd_idiot()
 
         # Wtf is r? It might be useful
         if r == 'QUIT':
