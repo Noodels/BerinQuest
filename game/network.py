@@ -31,6 +31,7 @@ class UserConnection(StatefulTelnetProtocol):
         # Note that the telnet protocol should be researched for this,
         # the TelnetProtocol in twisted supports negotiation, use for colour
         # support, this class will filter out colour based on result
+        self.world.registerConnection(self)
         self.sendLine(self.world.getBanner( ))
         self.transport.write("User: ")
         self.state = 'User'
