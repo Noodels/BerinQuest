@@ -10,5 +10,5 @@ banner: "XXXXXX           \
 
 port: 8081
 ticktime: 10
-dbpath: data/bq.sql
-spawn: 1
+dbpath: data/bq.db
+spawn: 2

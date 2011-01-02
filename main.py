@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/env python2
 # Distributed under the terms of the GNU GPLv3
 # Copyright 2010 Berin Smaldon
 from game.world import World
