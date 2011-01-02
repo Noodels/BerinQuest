@@ -9,10 +9,12 @@ from parser import Parser
 class ArgFactory(Factory):
     def __init__(self, *arguments):
         self.args = arguments
+        self.protocol = None
         # If ever required:
         # Factory.__init__(self)
 
     def buildProtocol(self, addr):
+        assert self.protocol != None, "No protocol in factory set"
         p = self.protocol(*self.args)
         return p
     

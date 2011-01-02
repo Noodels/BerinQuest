@@ -1,7 +1,7 @@
 # Distributed under the terms of the GNU GPLv3
 # Copyright 2010 Berin Smaldon, Matt Windsor
 from metafile import Metafile
-from network import ArgFactory
+from network import ArgFactory, UserConnection
 from objects import BerinObject, Room, Puppet, itemTypes
 from database import DatabaseBackend
 import pickle
@@ -17,6 +17,7 @@ class World:
 
         self.connections = [ ]
         self.factory = ArgFactory(self)
+        self.factory.protocol = UserConnection
         self.port = None
 
         self.reactorRef = None
