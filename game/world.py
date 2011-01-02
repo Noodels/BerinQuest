@@ -235,6 +235,9 @@ class World:
 
     def getPort(self):
         return self.port
+    
+    def getBanner(self):
+        return self.meta.get('banner', "")
 
     def destroy(self, item):
         item.moveTo(None)
