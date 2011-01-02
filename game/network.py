@@ -67,7 +67,7 @@ class UserConnection(StatefulTelnetProtocol):
         puppetID = self.world.checkUserCredentials(*self._login)
         if puppetID:
             # Add a user to the world
-            self.puppet = world.getByID(puppetID)
+            self.puppet = self.world.getByID(puppetID)
 
             if self.puppet:
                 if self.puppet.client != None:
