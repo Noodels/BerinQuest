@@ -84,7 +84,7 @@ class UserConnection(StatefulTelnetProtocol):
             assert (self.puppet != None), \
                     "Unable to find puppet for "+self._login[0]
             assert (self.puppet.client == None), "Two users to one puppet error"
-            self.puppet.registerConnection(self)
+            self.puppet.registerClient(self)
             self.parser = Parser(self.puppet)
             return 'Command'
 
