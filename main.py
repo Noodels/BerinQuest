@@ -14,4 +14,4 @@ if __name__ == '__main__':
     s = reactor.listenTCP(bq.getPort( ), bq.getFactory( ))
     bq.animate(reactor, s)
 
-    reactor.main( )
+    reactor.run( )

@@ -162,7 +162,7 @@ class World:
             if i:
                 d = self.getByID(i)
                 o.moveTo(d)
-                del i._REAL_LOC
+                del o._REAL_LOC
             
 
     # Put the exits in rooms right
