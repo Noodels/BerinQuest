@@ -40,7 +40,7 @@ class Parser:
                 self.puppet.getLocation().hasExit(command[0]):
             self.cmd_go("go",command[0])
         else:
-            self.puppet.sendLine("You are acting like an idiot")
+            self.puppet.display("You are acting like an idiot")
 
     def cmd_go(self, go, where):
         src = self.puppet.getLocation()
