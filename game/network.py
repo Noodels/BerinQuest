@@ -35,7 +35,7 @@ class UserConnection(StatefulTelnetProtocol):
         self.transport.write("User: ")
         self.state = 'User'
 
-    def connectionLost(self):
+    def connectionLost(self, reason):
         self.puppet.deregisterClient( )
         if self._quitflag == 1:
             # Client quit
