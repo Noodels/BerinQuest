@@ -71,6 +71,13 @@ class BerinObject:
     def renderExits(self):
         return "There are no exits here"
 
+    def renderContents(self):
+        if len(self.contents) > 0:
+            return "Items here: " + \
+            ", ".join([i.getAttribute('oshort') for i in self.contents])
+        else:
+            return "No items here"
+
     def hasExit(self, exit):
         return False
 

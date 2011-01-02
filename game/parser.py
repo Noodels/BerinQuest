@@ -58,7 +58,15 @@ class Parser:
 
     def cmd_look(self, *command):
         if len(command) < 2:
-            self.cmd_idiot()
+            l = self.puppet.getLocation()
+            if l == None:
+                self.puppet.display("You are somehow trapped in the void")
+                return
+            self.puppet.display(l.getAttribute('ishort') + "\n" + \
+            l.getAttribute('idesc') + "\n" + \
+            l.renderContents() + \
+            l.renderExits())
+            #self.cmd_idiot()
             return
 
         t = None
