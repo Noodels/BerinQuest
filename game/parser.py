@@ -71,7 +71,7 @@ class Parser:
 
         t = None
         _lhere = self.puppet.getLocation() != None
-        if command[2] == 'own':
+        if command[1] == 'own':
             command = command[2:]
             if len(command) < 1 or len(command) > 2:
                 self.cmd_idiot()
