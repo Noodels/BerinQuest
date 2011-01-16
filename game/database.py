@@ -1,7 +1,7 @@
 # Distributed under the terms of the GNU GPLv3
 # Copyright 2010 Matt Windsor
 
-import sqlite3, yaml
+import sqlite3, yaml, unicodedata
 
 class DatabaseBackend (object):
 
@@ -74,6 +74,7 @@ class DatabaseBackend (object):
      "destinationid" : 2})
     }
 
+
     def __init__(self, filename):
         """Creates the DatabaseBackend, opening a database connection."""
         object.__init__(self)
@@ -86,6 +87,16 @@ class DatabaseBackend (object):
         self.conn.commit()
         self.conn.close()
 
+
+    def toASCII(self, string):
+        """Convert a potentially Unicode string to ASCII."""
+        
+        if (isinstance(string, str) == True):       # Normal string, pass through
+            return string
+        elif (isinstance(string, unicode) == True): # Unicode string, convert
+            return unicodedata.normalize('NFKD', string).encode('ascii', 'replace')
+        else:                                       # Not a string
+            return "???"
         
     def dropTables(self):
         """Drop every table defined in the BerinQuest database."""
@@ -246,7 +257,7 @@ class DatabaseBackend (object):
             for arow in c.execute('''SELECT object_attributes.key, object_attributes.value
                                  FROM object_attributes
                                  WHERE object_attributes.objectid = ?''', (row[0],)):
-                itemAttribs[arow[0]] = arow[1]
+                itemAttribs[self.toASCII(arow[0])] = self.toASCII(arow[1])
             
             # Add the attributes to the end of the row.
             
@@ -346,7 +357,11 @@ class DatabaseBackend (object):
             # Should be only one entry at most for a user!
             assert (len(playerrows) == 1)
             
-            return playerrows[0][0], playerrows[0][1], playerrows[0][2]
+            username = self.toASCII(playerrows[0][0])
+            passhash = self.toASCII(playerrows[0][1])
+            puppetID = playerrows[0][2]
+            
+            return username, passhash, puppetID
         
     
     def storeUser(self, username, passhash, puppetid):
@@ -372,7 +387,7 @@ class DatabaseBackend (object):
                              FROM room_exits
                              WHERE roomid = ?''', 
                              (roomid,)):
-            exitdict[row[0]] = row[1]
+            exitdict[self.toASCII(row[0])] = row[1]
             
         return exitdict
     
