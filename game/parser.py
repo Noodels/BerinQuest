@@ -64,7 +64,7 @@ class Parser:
                 return
             self.puppet.display(l.getAttribute('ishort') + "\n" + \
             l.getAttribute('idesc') + "\n" + \
-            l.renderContents() + \
+            l.renderContents() + "\nExits: " + \
             l.renderExits())
             #self.cmd_idiot()
             return
@@ -88,6 +88,8 @@ class Parser:
             if n < 1:
                 self.puppet.display("You can't look into other dimensions")
                 return None
+        else:
+            n = 1
         if len(command) != 1:
             self.cmd_idiot()
             return None
