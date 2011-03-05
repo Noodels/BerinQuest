@@ -125,6 +125,7 @@ class Room(BerinObject):
     def __init__(self, world, loc, **attribs):
         self.exits = { }
         BerinObject.__init__(self, world, loc, **attribs)
+        world.registerRoom(self)
 
     def renderExits(self):
         return ", ".join(self.exits.keys())
@@ -149,6 +150,7 @@ class Room(BerinObject):
         del self.exits[exit]
 
     def getExit(self, exit):
+        #print self.exits
         return self.exits.get(exit, None)
 
 # Objects that represent the players, mostly they just need to be tired to
@@ -159,6 +161,7 @@ class Puppet(BerinObject):
         self.client = None
         self._quitFlag = 0
         BerinObject.__init__(self, world, loc, **attribs)
+        world.registerPuppet(self)
 
     def display(self, text):
         if self.client != None:

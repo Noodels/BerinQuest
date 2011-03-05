@@ -70,10 +70,16 @@ class World:
 
     def register(self, obj):
         self.objects.append(obj)
-        if type(obj) == Room:
-            self.rooms.append(obj)
-        if type(obj) == Puppet:
-            self.puppets.append(obj)
+        #if type(obj) == Room:
+        #    self.rooms.append(obj)
+        #if type(obj) == Puppet:
+        #    self.puppets.append(obj)
+
+    def registerRoom(self, r):
+        self.rooms.append(r)
+
+    def registerPuppet(self, p):
+        self.puppets.append(p)
 
     def deregister(self, obj):
         self.objects.remove(obj)
@@ -164,15 +170,20 @@ class World:
                 d = self.getByID(i)
                 o.moveTo(d)
                 del o._REAL_LOC
+            else:
+                assert type(o.getLocation()) != int, "Room location set as integer"
             
 
     # Put the exits in rooms right
     def retrRooms(self):
+        print "Finalising",len(self.rooms),"rooms"
         for r in self.rooms:
             for exit, dest in r.exits.items():
                 d = self.getByID(dest)
                 assert d
+                assert type(d) != int, "Room exit set as integer"
                 r.exits[exit] = d
+                #print "DEBUG: Set exit of", r.getAttr('ishort'), "named", exit, "to", d
 
     def store(self, item):
         """Store an item in the database."""
@@ -197,11 +208,11 @@ class World:
                 for exit, dest in item.exits.items():
                     self.db.storeExit(item.getID(), exit, dest)
 
-        itemType = itemTypes.index(type(item))
+        itemType = itemTypes.index(item.__class__)
         
         if itemLID < 1 and item.getLocation() != None:
             itemLID = item.getLocation().getID()
-            item.getLocation.removeItem(item)
+            item.getLocation().removeItem(item)
 
         for i in item.getContents():
             self.store(i)
