@@ -240,7 +240,6 @@ class DatabaseBackend (object):
             return itemID, itemType, itemLID, itemAttribs
 
 
-
     def getItems(self):
         """Generate an iterator that yields (itemID, itemType, itemLID, itemAttributes) tuples 
         for each item in the database."""
@@ -274,28 +273,83 @@ class DatabaseBackend (object):
                                             WHERE objects.locationID = ?''', 
                                             (locationID,))]
      
+     
+    def itemInDB(self, itemID):
+        """Returns true if the item ID is already present in the database,
+        and false otherwise."""
+        
+        c = self.conn.cursor()
+        
+        # TODO: Make this less ugly
+        
+        for row in c.execute('''SELECT objects.objectid
+                             FROM objects
+                             WHERE objects.objectid = ?''',
+                             (itemID,)):
+            return True
+        
+        return False
+     
+     
     def storeItem(self, itemID, itemType, itemLID, itemAttribs):
         """Store a BerinObject's data (ID, type, location ID and attribute
         dictionary respectively) into the database."""    
 
         c = self.conn.cursor()
         
-        # Store non-attribute data
+        # If the item's already in the database, modify it instead
         
-        c.execute('''INSERT INTO objects
-                  VALUES (?, ?, ?)''', 
-                  (itemID, itemType, itemLID))
+        if (self.itemInDB(itemID)):
+            self.modifyItem(itemID, itemType, itemLID, itemAttribs)
+        else:
+            # Store non-attribute data
         
+            c.execute('''INSERT INTO objects
+                      VALUES (?, ?, ?)''', 
+                      (itemID, itemType, itemLID))
         
-        # Store attributes
+            self.storeItemAttribs(itemID, itemAttribs)
+
+
+    def modifyItem(self, itemID, itemType, itemLID, itemAttribs):
+        """Modify the object with ID itemID.  The item must exist in 
+        the database (use itemInDB first to check)."""
+
+        c = self.conn.cursor()
+
+        c.execute('''UPDATE objects
+                  SET typeid = ?
+                  WHERE objectid = ?''',
+                  (itemType, itemID))
         
+        c.execute('''UPDATE objects
+                  SET locationid = ?
+                  WHERE objectid = ?''',
+                  (itemLID, itemID))
+        
+        self.storeItemAttribs(itemID, itemAttribs)
+
+
+    def storeItemAttribs(self, itemID, itemAttribs):
+        """Store attributes for the item with ID itemID, replacing 
+        any existing attributes that may be in the database."""
+        
+        c = self.conn.cursor()
+        
+        # Clean off any existing attributes
+        
+        c.execute('''DELETE
+                  FROM object_attributes
+                  WHERE object_attributes.objectid = ?''', 
+                  (itemID,))
+                
         for key in itemAttribs.keys():
             c.execute('''INSERT INTO object_attributes
                       VALUES (?, ?, ?)''',
                       (itemID, key, itemAttribs[key]))
         
         self.conn.commit()
-        
+
         
     def delItem(self, identity, new_location):
         """Strike a BerinObject from of the database with identity identity,
