@@ -309,6 +309,7 @@ class DatabaseBackend (object):
                       (itemID, itemType, itemLID))
         
             self.storeItemAttribs(itemID, itemAttribs)
+            # storeItemAttribs commits for us; no need to commit changes here.
 
 
     def modifyItem(self, itemID, itemType, itemLID, itemAttribs):
@@ -328,6 +329,7 @@ class DatabaseBackend (object):
                   (itemLID, itemID))
         
         self.storeItemAttribs(itemID, itemAttribs)
+        # storeItemAttribs commits for us; no need to commit changes here.
 
 
     def storeItemAttribs(self, itemID, itemAttribs):
