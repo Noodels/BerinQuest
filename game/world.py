@@ -49,6 +49,8 @@ class World:
         # Remove puppets
         for p in self.puppets:
             self.store(p)
+            self.puppets.remove(p)
+            self.objects.remove(p)
 
         self.startingRoom = self.getByID(self.startingRoom)
         assert self.startingRoom != None
@@ -190,8 +192,9 @@ class World:
         
         itemID = item.getID()
         itemLID = 0
+        itemType = itemTypes.index(item.__class__)
 
-        if type(item) == Room:
+        if itemType == Room:
             # Cannot store unless exits are made safe
             if Room in [type(d) for d in item.exits.itervalues()]:
                 # In this case, the room is probably being stored recursively
@@ -207,8 +210,6 @@ class World:
 
                 for exit, dest in item.exits.items():
                     self.db.storeExit(item.getID(), exit, dest)
-
-        itemType = itemTypes.index(item.__class__)
         
         if itemLID < 1 and item.getLocation() != None:
             itemLID = item.getLocation().getID()

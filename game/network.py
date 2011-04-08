@@ -71,6 +71,7 @@ class UserConnection(StatefulTelnetProtocol):
             self.puppet = self.world.getByID(puppetID)
 
             if self.puppet:
+                print "VERBOSE: PUPPET LOGIN OVER EXISTING PUPPET"
                 if self.puppet.client != None:
                     # TODO: Make puppet.display show ip of replacing user
                     # This should also be logged when/if the game ever supports that
@@ -79,6 +80,7 @@ class UserConnection(StatefulTelnetProtocol):
                     self.puppet.deregisterClient()
                 self.sendLine("Welcome back, "+self._login[0])
             else:
+                print "VERBOSE: PUPPET RETRIEVED FOR LOGIN"
                 self.puppet = self.world.retrieve(puppetID)
                 self.sendLine("Welcome, "+self._login[0])
 
