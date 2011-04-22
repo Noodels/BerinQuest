@@ -62,10 +62,15 @@ class Parser:
             if l == None:
                 self.puppet.display("You are somehow trapped in the void")
                 return
-            self.puppet.display(l.getAttribute('ishort') + "\n" + \
-            l.getAttribute('idesc') + "\n" + \
-            l.renderContents() + "\nExits: " + \
-            l.renderExits())
+            self.puppet.display("\n".join(
+                # Unicode has a nasty tendency to get in here
+                # Uncomment the 2 following comments in times of type errors
+                #map(lambda x: str(type(x)),
+                [l.getAttribute('ishort'),
+                l.getAttribute('idesc'),
+                l.renderContents(),
+                "Exits: "+l.renderExits()]))
+                #)
             #self.cmd_idiot()
             return
 

@@ -122,11 +122,18 @@ class World:
     
     # Retrieves an item from the database and returns it
     def retrieve(self, itemID):
-        i = self.db.getItem(itemID)
-        if i[0] == None:
+        iDetails = self.db.getItem(itemID)
+        if iDetails[0] == None:
             return None
         else:
-            return self.createItem(*i)
+            item = self.createItem(*iDetails)
+            locID = getattr(item, '_REAL_LOC')
+            loc = self.getByID(locID)
+            if loc != None:
+                item.moveTo(loc)
+            else:
+                item.moveTo(self.startingRoom)
+            return item
 
     def retrieveALL(self):
         """Retrieve all items from the database backend.
