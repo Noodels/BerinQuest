@@ -39,7 +39,7 @@ class World:
         self.db = DatabaseBackend(dbpath)
         self.latestID = 0
         
-        self.retrieve()
+        self.retrieveALL()
 
         # Set locations
         self.finalizeRetrieval()
@@ -119,8 +119,16 @@ class World:
         for c in self.connections:
             c._quitFlag = 1
             c.transport.loseConnection()
+    
+    # Retrieves an item from the database and returns it
+    def retrieve(self, itemID):
+        i = self.db.getItem(itemID)
+        if i[0] == None:
+            return None
+        else:
+            return self.createItem(*i)
 
-    def retrieve(self):
+    def retrieveALL(self):
         """Retrieve all items from the database backend.
         
         This also appropriately sets latestID to the highest ID 
@@ -164,6 +172,8 @@ class World:
 
         if itemTypes[itemType] == Room:
             item.setExits(self.db.getExits(itemID))
+
+        return item
     
     def finalizeRetrieval(self):
         for o in self.objects:
