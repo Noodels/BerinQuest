@@ -46,6 +46,7 @@ class UserConnection(StatefulTelnetProtocol):
                     self.puppet.getAttribute('oshort') + \
                             " logs out")
             self.world.store(self.puppet)
+            self.world.deregisterPuppet(self.puppet)
             self.world.deregisterConnection(self)
         else:
             # Something else happened

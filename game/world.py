@@ -87,9 +87,17 @@ class World:
         self.puppets.append(p)
 
     def deregister(self, obj):
+        # Here is a haiku:
+        # Is this function safe?
+        # What the hell was I thinking?
+        # Deletion pending
         self.objects.remove(obj)
         self.rooms.remove(obj)
         self.puppets.remove(obj)
+
+    def deregisterPuppet(self, p):
+        self.objects.remove(p)
+        self.puppets.remove(p)
 
     def registerConnection(self, conn):
         self.connections.append(conn)
