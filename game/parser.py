@@ -24,7 +24,7 @@ class Parser:
         try:
             r = getattr(self, "cmd_"+command[0], self.cmd_idiot)(*command)
         except TypeError:
-            self.cmd_idiot()
+            r = self.cmd_idiot()
 
         # Wtf is r? It might be useful
         if r == 'QUIT':
@@ -40,7 +40,7 @@ class Parser:
                 self.puppet.getLocation().hasExit(command[0]):
             self.cmd_go("go",command[0])
         else:
-            self.puppet.sendLine("You are acting like an idiot")
+            self.puppet.display("You are acting like an idiot")
 
     def cmd_go(self, go, where):
         src = self.puppet.getLocation()
@@ -58,12 +58,25 @@ class Parser:
 
     def cmd_look(self, *command):
         if len(command) < 2:
-            self.cmd_idiot()
+            l = self.puppet.getLocation()
+            if l == None:
+                self.puppet.display("You are somehow trapped in the void")
+                return
+            self.puppet.display("\n".join(
+                # Unicode has a nasty tendency to get in here
+                # Uncomment the 2 following comments in times of type errors
+                #map(lambda x: str(type(x)),
+                [l.getAttribute('ishort'),
+                l.getAttribute('idesc'),
+                l.renderContents(),
+                "Exits: "+l.renderExits()]))
+                #)
+            #self.cmd_idiot()
             return
 
         t = None
         _lhere = self.puppet.getLocation() != None
-        if command[2] == 'own':
+        if command[1] == 'own':
             command = command[2:]
             if len(command) < 1 or len(command) > 2:
                 self.cmd_idiot()
@@ -80,6 +93,8 @@ class Parser:
             if n < 1:
                 self.puppet.display("You can't look into other dimensions")
                 return None
+        else:
+            n = 1
         if len(command) != 1:
             self.cmd_idiot()
             return None

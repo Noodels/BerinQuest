@@ -46,9 +46,9 @@ objects:
 
 players:
          - username: Berin
-           passhash: EkofjeJOWsja
+           passhash: 322d188cb256edf960c84c23ae630e2d
            puppetid: 1
 
          - username: Pascal
-           passhash: EfomfORJgnmd
+           passhash: 64e88b02ad08079e342d827715ab4eca
            puppetid: 4

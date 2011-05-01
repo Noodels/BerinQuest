@@ -9,10 +9,12 @@ from parser import Parser
 class ArgFactory(Factory):
     def __init__(self, *arguments):
         self.args = arguments
+        self.protocol = None
         # If ever required:
         # Factory.__init__(self)
 
     def buildProtocol(self, addr):
+        assert self.protocol != None, "No protocol in factory set"
         p = self.protocol(*self.args)
         return p
     
@@ -29,11 +31,12 @@ class UserConnection(StatefulTelnetProtocol):
         # Note that the telnet protocol should be researched for this,
         # the TelnetProtocol in twisted supports negotiation, use for colour
         # support, this class will filter out colour based on result
+        self.world.registerConnection(self)
         self.sendLine(self.world.getBanner( ))
         self.transport.write("User: ")
         self.state = 'User'
 
-    def connectionLost(self):
+    def connectionLost(self, reason):
         self.puppet.deregisterClient( )
         if self._quitflag == 1:
             # Client quit
@@ -60,14 +63,15 @@ class UserConnection(StatefulTelnetProtocol):
         return 'Password'
     
     def telnet_Password(self, line):
-        self._login[1] = md5(line.strip()).digest()
+        self._login[1] = md5(line.strip()).hexdigest()
 
         puppetID = self.world.checkUserCredentials(*self._login)
         if puppetID:
             # Add a user to the world
-            self.puppet = world.getByID(puppetID)
+            self.puppet = self.world.getByID(puppetID)
 
             if self.puppet:
+                print "VERBOSE: PUPPET LOGIN OVER EXISTING PUPPET"
                 if self.puppet.client != None:
                     # TODO: Make puppet.display show ip of replacing user
                     # This should also be logged when/if the game ever supports that
@@ -76,13 +80,14 @@ class UserConnection(StatefulTelnetProtocol):
                     self.puppet.deregisterClient()
                 self.sendLine("Welcome back, "+self._login[0])
             else:
+                print "VERBOSE: PUPPET RETRIEVED FOR LOGIN"
                 self.puppet = self.world.retrieve(puppetID)
                 self.sendLine("Welcome, "+self._login[0])
 
             assert (self.puppet != None), \
                     "Unable to find puppet for "+self._login[0]
             assert (self.puppet.client == None), "Two users to one puppet error"
-            self.puppet.registerConnection(self)
+            self.puppet.registerClient(self)
             self.parser = Parser(self.puppet)
             return 'Command'
 

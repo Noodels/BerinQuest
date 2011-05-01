@@ -1,7 +1,7 @@
 # Distributed under the terms of the GNU GPLv3
 # Copyright 2010 Matt Windsor
 
-import sqlite3, yaml
+import sqlite3, yaml, unicodedata
 
 class DatabaseBackend (object):
 
@@ -74,6 +74,7 @@ class DatabaseBackend (object):
      "destinationid" : 2})
     }
 
+
     def __init__(self, filename):
         """Creates the DatabaseBackend, opening a database connection."""
         object.__init__(self)
@@ -86,6 +87,16 @@ class DatabaseBackend (object):
         self.conn.commit()
         self.conn.close()
 
+
+    def toASCII(self, string):
+        """Convert a potentially Unicode string to ASCII."""
+        
+        if (isinstance(string, str) == True):       # Normal string, pass through
+            return string
+        elif (isinstance(string, unicode) == True): # Unicode string, convert
+            return unicodedata.normalize('NFKD', string).encode('ascii', 'replace')
+        else:                                       # Not a string
+            return "???"
         
     def dropTables(self):
         """Drop every table defined in the BerinQuest database."""
@@ -192,8 +203,8 @@ class DatabaseBackend (object):
                       (player['username'], player['passhash'], player['puppetid']))
         
         self.conn.commit()
-
-
+        
+        
     def getItem(self, identity):
         """Get a BerinObject out of the database with identity identity.
         
@@ -227,7 +238,30 @@ class DatabaseBackend (object):
                 itemAttribs[row[0]] = row[1]
             
             return itemID, itemType, itemLID, itemAttribs
-     
+
+
+    def getItems(self):
+        """Generate an iterator that yields (itemID, itemType, itemLID, itemAttributes) tuples 
+        for each item in the database."""
+
+        c = self.conn.cursor()
+        
+        for row in c.execute('''SELECT objects.objectid, objects.typeid, objects.locationid
+                               FROM objects''').fetchall():
+                    
+            # Get the attributes using row[0] as object ID
+            
+            itemAttribs = {}
+        
+            for arow in c.execute('''SELECT object_attributes.key, object_attributes.value
+                                 FROM object_attributes
+                                 WHERE object_attributes.objectid = ?''', (row[0],)):
+                itemAttribs[self.toASCII(arow[0])] = self.toASCII(arow[1])
+            
+            # Add the attributes to the end of the row.
+            
+            yield (row[0], row[1], row[2], itemAttribs)
+            
      
     def getChildren(self, locationID):
         """Retrieve a list of all object IDs whose location ID is locationID."""
@@ -239,23 +273,85 @@ class DatabaseBackend (object):
                                             WHERE objects.locationID = ?''', 
                                             (locationID,))]
      
+     
+    def itemInDB(self, itemID):
+        """Returns true if the item ID is already present in the database,
+        and false otherwise."""
+        
+        c = self.conn.cursor()
+        
+        # TODO: Make this less ugly
+        
+        for row in c.execute('''SELECT objects.objectid
+                             FROM objects
+                             WHERE objects.objectid = ?''',
+                             (itemID,)):
+            return True
+        
+        return False
+     
+     
     def storeItem(self, itemID, itemType, itemLID, itemAttribs):
         """Store a BerinObject's data (ID, type, location ID and attribute
         dictionary respectively) into the database."""    
 
         c = self.conn.cursor()
         
-        c.execute('''INSERT INTO objects
-                  VALUES (?, ?, ?)''', 
-                  (itemID, itemType, itemLID))
+        # If the item's already in the database, modify it instead
         
+        if (self.itemInDB(itemID)):
+            self.modifyItem(itemID, itemType, itemLID, itemAttribs)
+        else:
+            # Store non-attribute data
+        
+            c.execute('''INSERT INTO objects
+                      VALUES (?, ?, ?)''', 
+                      (itemID, itemType, itemLID))
+        
+            self.storeItemAttribs(itemID, itemAttribs)
+            # storeItemAttribs commits for us; no need to commit changes here.
+
+
+    def modifyItem(self, itemID, itemType, itemLID, itemAttribs):
+        """Modify the object with ID itemID.  The item must exist in 
+        the database (use itemInDB first to check)."""
+
+        c = self.conn.cursor()
+
+        c.execute('''UPDATE objects
+                  SET typeid = ?
+                  WHERE objectid = ?''',
+                  (itemType, itemID))
+        
+        c.execute('''UPDATE objects
+                  SET locationid = ?
+                  WHERE objectid = ?''',
+                  (itemLID, itemID))
+        
+        self.storeItemAttribs(itemID, itemAttribs)
+        # storeItemAttribs commits for us; no need to commit changes here.
+
+
+    def storeItemAttribs(self, itemID, itemAttribs):
+        """Store attributes for the item with ID itemID, replacing 
+        any existing attributes that may be in the database."""
+        
+        c = self.conn.cursor()
+        
+        # Clean off any existing attributes
+        
+        c.execute('''DELETE
+                  FROM object_attributes
+                  WHERE object_attributes.objectid = ?''', 
+                  (itemID,))
+                
         for key in itemAttribs.keys():
             c.execute('''INSERT INTO object_attributes
                       VALUES (?, ?, ?)''',
                       (itemID, key, itemAttribs[key]))
         
         self.conn.commit()
-        
+
         
     def delItem(self, identity, new_location):
         """Strike a BerinObject from of the database with identity identity,
@@ -266,10 +362,15 @@ class DatabaseBackend (object):
         
         c = self.conn.cursor()
 
+        # Move objects out of item to be stricken into new location
+
         c.execute('''UPDATE objects
                   SET locationid = ?
                   WHERE locationid = ?''',
                   (new_location, identity))
+
+
+        # Delete all data we have on the stricken item
 
         c.execute('''DELETE
                   FROM objects
@@ -312,7 +413,11 @@ class DatabaseBackend (object):
             # Should be only one entry at most for a user!
             assert (len(playerrows) == 1)
             
-            return playerrows[0][0], playerrows[0][1], playerrows[0][2]
+            username = self.toASCII(playerrows[0][0])
+            passhash = self.toASCII(playerrows[0][1])
+            puppetID = playerrows[0][2]
+            
+            return username, passhash, puppetID
         
     
     def storeUser(self, username, passhash, puppetid):
@@ -338,7 +443,7 @@ class DatabaseBackend (object):
                              FROM room_exits
                              WHERE roomid = ?''', 
                              (roomid,)):
-            exitdict[row[0]] = row[1]
+            exitdict[self.toASCII(row[0])] = row[1]
             
         return exitdict
     
@@ -353,3 +458,4 @@ class DatabaseBackend (object):
                   (objectid, direction, destinationid))
         
         self.conn.commit()
+        

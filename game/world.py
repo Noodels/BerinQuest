@@ -1,7 +1,7 @@
 # Distributed under the terms of the GNU GPLv3
 # Copyright 2010 Berin Smaldon, Matt Windsor
 from metafile import Metafile
-from network import ArgFactory
+from network import ArgFactory, UserConnection
 from objects import BerinObject, Room, Puppet, itemTypes
 from database import DatabaseBackend
 import pickle
@@ -17,6 +17,7 @@ class World:
 
         self.connections = [ ]
         self.factory = ArgFactory(self)
+        self.factory.protocol = UserConnection
         self.port = None
 
         self.reactorRef = None
@@ -40,10 +41,8 @@ class World:
 
         self.db = DatabaseBackend(dbpath)
         self.latestID = 0
-        # TODO: Select ALL objects from self.db, return iterator
-        for i in cursor:
-            latestID = max(latestID, i)
-            self.retrieve(i)
+        
+        self.retrieveALL()
 
         # Set locations
         self.finalizeRetrieval()
@@ -53,13 +52,15 @@ class World:
         # Remove puppets
         for p in self.puppets:
             self.store(p)
+            self.puppets.remove(p)
+            self.objects.remove(p)
 
         self.startingRoom = self.getByID(self.startingRoom)
         assert self.startingRoom != None
 
     def __del__(self):
         del self.db
-        # TODO: Make metafile persistent if necessary
+        del self.meta
     
     def getByID(self, identity):
         for o in self.objects:
@@ -74,10 +75,16 @@ class World:
 
     def register(self, obj):
         self.objects.append(obj)
-        if type(obj) == Room:
-            self.rooms.append(obj)
-        if type(obj) == Puppet:
-            self.puppets.append(obj)
+        #if type(obj) == Room:
+        #    self.rooms.append(obj)
+        #if type(obj) == Puppet:
+        #    self.puppets.append(obj)
+
+    def registerRoom(self, r):
+        self.rooms.append(r)
+
+    def registerPuppet(self, p):
+        self.puppets.append(p)
 
     def deregister(self, obj):
         self.objects.remove(obj)
@@ -115,50 +122,99 @@ class World:
         for c in self.connections:
             c._quitFlag = 1
             c.transport.loseConnection()
+    
+    # Retrieves an item from the database and returns it
+    def retrieve(self, itemID):
+        iDetails = self.db.getItem(itemID)
+        if iDetails[0] == None:
+            return None
+        else:
+            item = self.createItem(*iDetails)
+            locID = getattr(item, '_REAL_LOC')
+            loc = self.getByID(locID)
+            if loc != None:
+                item.moveTo(loc)
+            else:
+                item.moveTo(self.startingRoom)
+            return item
 
-    def retrieve(self, identity):
-        # Also restore an items contents in the database
-        itemID, itemType, itemLID, itemAttribs = self.db.getItem(identity)
+    def retrieveALL(self):
+        """Retrieve all items from the database backend.
+        
+        This also appropriately sets latestID to the highest ID 
+        present in the database.
+        """
+        
+        # getItems is an iterator retrieving tuples
+        # (itemID, itemType, itemLocationID, itemAttributes)
+        
+        for i in self.db.getItems():
+            self.latestID = max(self.latestID, i[0])
+            self.createItem (i[0], i[1], i[2], i[3])
+
+
+    def createItem(self, itemID, itemType, itemLID, itemAttribs):
+        """Create a new item in memory given the item's ID, type, location ID
+        and attributes, as retrieved for example from the database.
+        """
 
         itemAttribs['id'] = itemID
-        item = itemTypes[itemType](self, self.getByID(itemLID), **itemAttribs)
-        if item.getLocation == None and itemLID > 0:
+
+        # NOTE: The item location can't be retrieved yet as it may not have 
+        # been pulled out of the database yet.  We'll resolve it later but, 
+        # for now, give it the LID as param _REAL_LOC.
+        # TODO: clean this up?
+        
+        item = itemTypes[itemType](self, None, **itemAttribs)
+        item._REAL_LOC = itemLID
+        
+        #if item.getLocation == None and itemLID > 0:
             # Item should have a location but doesn't, should only happen
             # when players pick up other players, which shouldn't really
             # happen. Move the item to a safe room. Might be game start.
-            item.moveTo(self.startingRoom)
-            item._REAL_LOC = itemLID
+        #    item.moveTo(self.startingRoom)
+        #    item._REAL_LOC = itemLID
 
+        # v-- Not necessary (all items retrieved)
         # Get all objects whose LID is this object's ID
-        for childID in self.db.getChildren(itemID):
-            self.retrieve(childID)
+        #for childID in self.db.getChildren(itemID):
+        #    self.retrieve(childID)
 
         if itemTypes[itemType] == Room:
             item.setExits(self.db.getExits(itemID))
-            pass
+
+        return item
     
     def finalizeRetrieval(self):
         for o in self.objects:
-            i = getattr(item, "_REAL_LOC", False)
+            i = getattr(o, "_REAL_LOC", False)
             if i:
                 d = self.getByID(i)
                 o.moveTo(d)
+                del o._REAL_LOC
+            else:
+                assert type(o.getLocation()) != int, "Room location set as integer"
+            
 
     # Put the exits in rooms right
     def retrRooms(self):
+        print "Finalising",len(self.rooms),"rooms"
         for r in self.rooms:
             for exit, dest in r.exits.items():
                 d = self.getByID(dest)
                 assert d
+                assert type(d) != int, "Room exit set as integer"
                 r.exits[exit] = d
+                #print "DEBUG: Set exit of", r.getAttr('ishort'), "named", exit, "to", d
 
     def store(self, item):
         """Store an item in the database."""
         
         itemID = item.getID()
         itemLID = 0
+        itemType = itemTypes.index(item.__class__)
 
-        if type(item) == Room:
+        if itemType == Room:
             # Cannot store unless exits are made safe
             if Room in [type(d) for d in item.exits.itervalues()]:
                 # In this case, the room is probably being stored recursively
@@ -174,12 +230,10 @@ class World:
 
                 for exit, dest in item.exits.items():
                     self.db.storeExit(item.getID(), exit, dest)
-
-        itemType = itemTypes.index(type(item))
         
         if itemLID < 1 and item.getLocation() != None:
             itemLID = item.getLocation().getID()
-            item.getLocation.removeItem(item)
+            item.getLocation().removeItem(item)
 
         for i in item.getContents():
             self.store(i)
@@ -213,6 +267,9 @@ class World:
 
     def getPort(self):
         return self.port
+    
+    def getBanner(self):
+        return self.meta.get('banner', "")
 
     def destroy(self, item):
         item.moveTo(None)
