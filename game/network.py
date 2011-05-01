@@ -25,6 +25,8 @@ class UserConnection(StatefulTelnetProtocol):
 
         self._login = [None, None]
         self._quitflag = 0
+        # The _quitflag notates whether the client quit intentionally or not
+        # all internal intentional quit methods should flag this
 
     def connectionMade(self):
         # world banner? Initialise stuff here
@@ -104,7 +106,7 @@ class UserConnection(StatefulTelnetProtocol):
             return 'Command'
         elif r == 'QUIT':
             # Quit here
-            self._quitFlag = 1
+            self._quitflag = 1
             self.transport.loseConnection()
         else:
             # Parser can change states to allow for complex interaction
