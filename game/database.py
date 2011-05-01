@@ -1,5 +1,5 @@
 # Distributed under the terms of the GNU GPLv3
-# Copyright 2010 Matt Windsor
+# Copyright 2010 Matt Windsor, Berin Smaldon
 
 import sqlite3, yaml, unicodedata
 
@@ -228,14 +228,15 @@ class DatabaseBackend (object):
             itemID = objectRows[0][0]
             itemType = objectRows[0][1]
             itemLID = objectRows[0][2]
-            itemAttribs = {}
-        
+            #itemAttribs = {}
+
             # Now get the attributes
+            itemAttribs = self.getItemAttributes(itemID, c)
         
-            for row in c.execute('''SELECT object_attributes.key, object_attributes.value
-                                 FROM object_attributes
-                                 WHERE object_attributes.objectid = ?''', (itemID,)):
-                itemAttribs[row[0]] = row[1]
+            #for row in c.execute('''SELECT object_attributes.key, object_attributes.value
+            #                     FROM object_attributes
+            #                     WHERE object_attributes.objectid = ?''', (itemID,)):
+            #    itemAttribs[row[0]] = row[1]
             
             return itemID, itemType, itemLID, itemAttribs
 
@@ -251,16 +252,30 @@ class DatabaseBackend (object):
                     
             # Get the attributes using row[0] as object ID
             
-            itemAttribs = {}
+            itemAttribs = self.getItemAttributes(row[0], c)
+            #itemAttribs = {}
         
-            for arow in c.execute('''SELECT object_attributes.key, object_attributes.value
-                                 FROM object_attributes
-                                 WHERE object_attributes.objectid = ?''', (row[0],)):
-                itemAttribs[self.toASCII(arow[0])] = self.toASCII(arow[1])
+            #for arow in c.execute('''SELECT object_attributes.key, object_attributes.value
+            #                     FROM object_attributes
+            #                     WHERE object_attributes.objectid = ?''', (row[0],)):
+            #    itemAttribs[self.toASCII(arow[0])] = self.toASCII(arow[1])
             
             # Add the attributes to the end of the row.
             
             yield (row[0], row[1], row[2], itemAttribs)
+
+    def getItemAttributes(self, itemID, c=None):
+        if c == None:
+            c = self.conn.cursor()
+
+        itemAttribs = {}
+        
+        for arow in c.execute('''SELECT object_attributes.key, object_attributes.value
+                                 FROM object_attributes
+                                 WHERE object_attributes.objectid = ?''', (itemID,)):
+            itemAttribs[self.toASCII(arow[0])] = self.toASCII(arow[1])
+
+        return itemAttribs
             
      
     def getChildren(self, locationID):
