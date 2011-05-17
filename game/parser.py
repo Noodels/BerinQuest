@@ -57,6 +57,7 @@ class Parser:
             self.puppet.display("You see no such exit")
 
     def cmd_look(self, *command):
+        command = list(command)
         if len(command) < 2:
             l = self.puppet.getLocation()
             if l == None:
